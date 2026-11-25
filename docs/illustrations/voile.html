@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planches du Voile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE occasion : planches d'ambiance pour imaginer un monde, ton émerveillé
+   IDEA un carnet de croquis d'expédition : chaque planche est un paysage du Voile vu par les premiers explorateurs
+   PICTURE trois grands paysages vectoriels, chacun avec un explorateur, sa lanterne (zone sûre) et son familier
+   COLOUR fond blanc nacré / nuit bleu profond, encre bleu-vert profond, chaque planche garde sa palette propre, accent or de lanterne
+   TYPE Fraunces pour les titres, Nunito Sans pour le texte
+   LAYOUT titre en bandeau, puis une bande par planche : image pleine largeur, texte en deux colonnes dessous ; tout s'empile sous 600px */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c1a22);--ink:light-dark(#12303a,#e4f1f2);--muted:light-dark(#4d6a72,#9fbcc2);--line:light-dark(#d5e4e6,#21414b);--panel:light-dark(#f2f8f8,#122631);--gold:#f2b84b}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Nunito Sans",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font:600 clamp(32px,5vw,50px)/1.05 Fraunces,Georgia,serif;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+h2{font:600 clamp(24px,3vw,34px)/1.1 Fraunces,Georgia,serif;letter-spacing:-.01em;margin:0 0 8px}
+h3{font-size:16px;font-weight:700;margin:0 0 4px}
+p{margin:0 0 12px;max-width:68ch}
+.lede{color:var(--muted);font-size:17px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.nav a{color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:10px 16px;font-weight:600}
+.nav a:hover,.nav a:focus-visible{border-color:var(--ink)}
+.fig{position:relative;height:clamp(260px,42vw,520px);border-radius:14px;overflow:hidden;background:var(--panel)}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:20px 32px;margin-top:20px}
+.tag{color:var(--muted);font-weight:600;margin-bottom:4px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;color:var(--muted);font-size:14px;margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.sep{border:0;border-top:1px solid var(--line);margin:0}
+.prompt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.prompt code{display:block;font:14px/1.5 ui-monospace,Menlo,monospace;overflow-wrap:anywhere;color:var(--ink)}
+.copy{margin-top:10px;font:600 15px "Nunito Sans",sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:10px 18px;min-height:44px;cursor:pointer}
+.copy:hover,.copy:focus-visible{border-color:var(--ink)}
+.note{font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.drift{animation:drift 14s ease-in-out infinite alternate}.drift2{animation:drift 20s ease-in-out infinite alternate-reverse}.bob{animation:bob 6s ease-in-out infinite alternate}}
+@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+@keyframes bob{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap">
+<h1>Le Voile : trois planches d'ambiance</h1>
+<p class="lede">Trois visions possibles du Voile, telles que pourraient les découvrir les premiers explorateurs. Sur chaque planche, un explorateur porte sa lanterne (le cercle doré marque la zone sûre) et son familier l'accompagne. Ce sont des croquis d'intention dessinés en code, pas des illustrations définitives.</p>
+<nav class="nav" aria-label="Planches"><a href="#ocean">A. Le Voile-Océan</a><a href="#jardin">B. Le Voile-Jardin</a><a href="#lumiere">C. Le Voile-Lumière</a><a href="#prompts">Pour aller plus loin</a></nav>
+</div></header>
+
+<section class="band" id="ocean"><div class="wrap">
+<div class="fig"><svg id="s-ocean" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Une mer de brume nacrée à l'aube, des îlots de roche flottants, une baleine de brume qui nage au loin, un explorateur avec sa lanterne et un renard sur un rocher au premier plan"></svg></div>
+<div class="legend"><span><i class="dot" style="background:#f2b84b"></i>Zone sûre de la lanterne</span><span><i class="dot" style="background:#e98a5f"></i>Le familier (ici un renard)</span></div>
+<div class="cols">
+<div><p class="tag">A</p><h2>Le Voile-Océan</h2><p>La brume se comporte comme une mer : une surface nacrée, des courants, des profondeurs de plus en plus épaisses. Des îlots de roche y flottent, et des créatures immenses y nagent lentement.</p></div>
+<div><h3>Ce qu'on y voit</h3><p>Des vagues de brume au lever du jour, des îles suspendues couvertes d'herbe, des baleines et des raies de brume, des courants qui dessinent des chemins.</p><h3>Le danger</h3><p>Être emporté par un courant et dériver loin de sa route. Le joueur Nature fait monter les courants et surgir des créatures des profondeurs.</p></div>
+</div>
+</div></section>
+<hr class="sep">
+
+<section class="band" id="jardin"><div class="wrap">
+<div class="fig"><svg id="s-jardin" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Un jardin démesuré dans une brume légère : fleurs géantes, champignons lumineux, lianes, un chemin de pierres et un explorateur avec sa lanterne suivi d'un renard"></svg></div>
+<div class="legend"><span><i class="dot" style="background:#f2b84b"></i>Zone sûre de la lanterne</span><span><i class="dot" style="background:#e98a5f"></i>Le familier (ici un renard)</span></div>
+<div class="cols">
+<div><p class="tag">B</p><h2>Le Voile-Jardin</h2><p>Dans le Voile, la nature pousse sans mesure. Fleurs plus hautes que des maisons, champignons qui luisent, arbres qui grandissent en une nuit : le paysage change sans cesse, et les cartes sont toujours à refaire.</p></div>
+<div><h3>Ce qu'on y voit</h3><p>Des couleurs vives, des pétales géants, des spores qui flottent comme des lucioles, des animaux à moitié plantes.</p><h3>Le danger</h3><p>Le chemin se referme derrière soi et la végétation enveloppe les imprudents. Le joueur Nature fait pousser des obstacles et réveille des créatures végétales.</p></div>
+</div>
+</div></section>
+<hr class="sep">
+
+<section class="band" id="lumiere"><div class="wrap">
+<div class="fig"><svg id="s-lumiere" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Une brume irisée au crépuscule : aurores dans le ciel, rochers flottants d'où des cascades montent vers le haut, particules lumineuses, un explorateur avec sa lanterne et une chouette"></svg></div>
+<div class="legend"><span><i class="dot" style="background:#f2b84b"></i>Zone sûre de la lanterne</span><span><i class="dot" style="background:#d9c7a0"></i>Le familier (ici une chouette)</span></div>
+<div class="cols">
+<div><p class="tag">C</p><h2>Le Voile-Lumière</h2><p>Une brume irisée où les lois sont un peu différentes : des rochers flottent, des cascades remontent vers le ciel, la faune brille dans la pénombre et des échos lointains résonnent.</p></div>
+<div><h3>Ce qu'on y voit</h3><p>Des aurores, des arches de cristal, des particules de lumière en suspension, des créatures presque transparentes.</p><h3>Le danger</h3><p>On perd ses repères : le haut, le bas, le temps. Sans lanterne, on s'endort dans la brume et l'on se réveille perdu, loin de là. Le joueur Nature déclenche des phénomènes étranges.</p></div>
+</div>
+</div></section>
+<hr class="sep">
+
+<section class="band" id="prompts"><div class="wrap">
+<h2>Pour aller plus loin : des illustrations peintes</h2>
+<p>Ces planches donnent une direction. Pour des images peintes plus riches, tu peux coller ces descriptions dans un générateur d'images (Midjourney, DALL·E, Leonardo…). Elles sont en anglais, la langue que ces outils comprennent le mieux.</p>
+<div class="prompt"><h3>A. Le Voile-Océan</h3><code id="p1">Concept art, a luminous sea of pearly mist at dawn, waves and currents made of fog, small grassy rock islands floating above the mist, a gigantic translucent whale made of mist swimming in the distance, a young explorer with a glowing golden lantern and a red fox companion standing on a rock in the foreground, sense of wonder, age of discovery, soft warm light, vibrant colors, painterly fantasy illustration, board game art</code><button class="copy" type="button" data-target="p1">Copier</button></div>
+<div class="prompt"><h3>B. Le Voile-Jardin</h3><code id="p2">Concept art, an overgrown giant garden inside a light magical mist, flowers taller than houses, glowing mushrooms, vines and floating spores like fireflies, a winding stone path, a young explorer holding a glowing golden lantern followed by a fox familiar, joyful and wondrous mood, vivid greens pinks and oranges, painterly fantasy illustration, board game art, not dark</code><button class="copy" type="button" data-target="p2">Copier</button></div>
+<div class="prompt"><h3>C. Le Voile-Lumière</h3><code id="p3">Concept art, an iridescent shimmering mist at dusk, auroras in the sky, floating rocks with waterfalls flowing upward, crystal arches, glowing particles suspended in the air, translucent luminous creatures, a young explorer with a golden lantern and an owl familiar on the shoulder, dreamlike and mysterious but bright, painterly fantasy illustration, board game art</code><button class="copy" type="button" data-target="p3">Copier</button></div>
+<p class="note" id="copy-msg" hidden>Copié.</p>
+</div></section>
+
+<script>
+{
+const NS = 'http://www.w3.org/2000/svg';
+let seed = 7;
+const rnd = () => { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; };
+const W = 1200, H = 600;
+
+const wave = (y, amp, freq, ph) => {
+  let d = 'M-80 ' + H + ' L-80 ' + y;
+  for (let x = -80; x <= W + 80; x += 20) d += ' L' + x + ' ' + (y + Math.sin(x / freq + ph) * amp + Math.sin(x / (freq * 0.37) + ph * 2) * amp * 0.35).toFixed(1);
+  return d + ' L' + (W + 80) + ' ' + H + ' Z';
+};
+const rock = (cx, cy, w, h, fill, top) =>
+  '<path d="M' + (cx - w / 2) + ' ' + cy + ' Q' + cx + ' ' + (cy - h * 0.18) + ' ' + (cx + w / 2) + ' ' + cy + ' L' + (cx + w * 0.28) + ' ' + (cy + h * 0.45) + ' L' + (cx + w * 0.06) + ' ' + (cy + h) + ' L' + (cx - w * 0.18) + ' ' + (cy + h * 0.5) + ' Z" fill="' + fill + '"/>' +
+  '<path d="M' + (cx - w / 2) + ' ' + cy + ' Q' + cx + ' ' + (cy - h * 0.18) + ' ' + (cx + w / 2) + ' ' + cy + ' Q' + cx + ' ' + (cy + h * 0.08) + ' ' + (cx - w / 2) + ' ' + cy + ' Z" fill="' + top + '"/>' +
+  '<path d="M' + (cx + w * 0.06) + ' ' + (cy + h) + ' L' + (cx + w * 0.28) + ' ' + (cy + h * 0.45) + ' L' + (cx + w / 2) + ' ' + cy + ' L' + (cx + w * 0.1) + ' ' + (cy + h * 0.2) + ' Z" fill="#000" opacity=".18"/>';
+
+const fox = (x, y, s) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+  '<path d="M-22 0 Q-24 -14 -10 -18 L10 -18 Q18 -18 20 -26 L24 -36 L28 -26 L30 -30 L32 -20 Q34 -12 26 -8 L22 0 Z" fill="#e98a5f"/>' +
+  '<path d="M-22 -8 Q-44 -14 -46 -30 Q-34 -22 -20 -16 Z" fill="#e98a5f"/><path d="M-40 -26 Q-46 -30 -46 -30 Q-42 -22 -36 -22 Z" fill="#fff"/>' +
+  '<circle cx="27" cy="-21" r="1.8" fill="#12303a"/><path d="M-10 0 L-10 6 M14 0 L14 6" stroke="#b5603d" stroke-width="4"/></g>';
+const owl = (x, y, s) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+  '<ellipse cx="0" cy="-14" rx="11" ry="15" fill="#d9c7a0"/><ellipse cx="0" cy="-10" rx="7" ry="9" fill="#f3e7cc"/>' +
+  '<circle cx="-4" cy="-20" r="3.5" fill="#fff"/><circle cx="4" cy="-20" r="3.5" fill="#fff"/><circle cx="-4" cy="-20" r="1.6" fill="#12303a"/><circle cx="4" cy="-20" r="1.6" fill="#12303a"/>' +
+  '<path d="M-1.5 -16 L0 -13 L1.5 -16 Z" fill="#e0a43a"/><path d="M-9 -27 L-6 -33 L-3 -27 M3 -27 L6 -33 L9 -27" fill="#d9c7a0"/></g>';
+
+const explorer = (id, x, y, s, cloak, pet) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' +
+  '<circle cx="26" cy="-104" r="150" fill="url(#' + id + '-glow)"/>' +
+  '<circle cx="26" cy="-104" r="150" fill="none" stroke="#f2b84b" stroke-width="2.5" stroke-dasharray="6 10" opacity=".85"/>' +
+  '<ellipse cx="0" cy="2" rx="30" ry="6" fill="#000" opacity=".2"/>' +
+  '<path d="M-20 0 Q-25 -48 -9 -72 L9 -72 Q25 -48 20 0 Z" fill="' + cloak + '"/>' +
+  '<path d="M4 -70 Q22 -46 20 0 L10 0 Q14 -40 0 -68 Z" fill="#000" opacity=".2"/>' +
+  '<path d="M-20 0 Q-25 -48 -9 -72 L-4 -70 Q-16 -44 -12 0 Z" fill="#fff" opacity=".12"/>' +
+  '<circle cx="0" cy="-82" r="11" fill="#f0c9a6"/><path d="M-14 -78 Q-15 -100 0 -100 Q15 -100 14 -78 Q8 -92 0 -92 Q-8 -92 -14 -78 Z" fill="' + cloak + '"/>' +
+  '<line x1="8" y1="-56" x2="26" y2="-96" stroke="#6b4a2e" stroke-width="4" stroke-linecap="round"/>' +
+  '<path d="M26 -96 Q34 -100 34 -94" fill="none" stroke="#6b4a2e" stroke-width="3"/>' +
+  '<rect x="27" y="-96" width="14" height="18" rx="3" fill="#ffe3a3" stroke="#a8762c" stroke-width="2"/>' +
+  '<rect x="25" y="-99" width="18" height="4" rx="2" fill="#a8762c"/>' +
+  (pet === 'fox' ? fox(-58, 2, 0.95) : owl(-14, -60, 0.9)) + '</g>';
+
+const glowDef = (id) => '<radialGradient id="' + id + '-glow"><stop offset="0" stop-color="#ffe7a6" stop-opacity=".75"/><stop offset=".35" stop-color="#f2b84b" stop-opacity=".28"/><stop offset="1" stop-color="#f2b84b" stop-opacity="0"/></radialGradient>';
+
+const scenes = {
+  'ocean': () => {
+    seed = 11;
+    let s = '<defs><linearGradient id="oc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3dc"/><stop offset=".55" stop-color="#f7d9c4"/><stop offset="1" stop-color="#fbe7d6"/></linearGradient>' +
+      '<linearGradient id="oc-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#cfe6ea"/></linearGradient>' + glowDef('oc') + '</defs>';
+    s += '<rect width="1200" height="600" fill="url(#oc-sky)"/><circle cx="880" cy="250" r="70" fill="#fff4dc" opacity=".9"/>';
+    s += '<g class="drift2">' + rock(260, 170, 150, 90, '#7d8f9a', '#8fbf8a') + rock(980, 120, 110, 70, '#8597a1', '#9cc795') + rock(640, 210, 70, 44, '#94a4ad', '#a7cf9f') + '</g>';
+    s += '<path d="M520 330 Q600 270 760 290 Q860 300 900 340 Q940 310 980 300 Q960 340 930 360 Q870 400 740 395 Q600 392 520 330 Z" fill="#ffffff" opacity=".55"/>';
+    s += '<path d="M700 300 Q720 260 750 270 Q735 285 730 300 Z" fill="#ffffff" opacity=".6"/><circle cx="580" cy="325" r="4" fill="#5d7f8a" opacity=".6"/>';
+    s += '<path d="' + wave(330, 14, 90, 1) + '" fill="#e3f1f3" opacity=".8"/>';
+    s += '<g class="drift"><path d="' + wave(380, 18, 70, 2) + '" fill="url(#oc-mist)" opacity=".9"/></g>';
+    s += '<path d="' + wave(440, 16, 60, 4) + '" fill="#f6fbfb"/>';
+    s += rock(230, 470, 300, 160, '#5f717c', '#7fae7a');
+    s += '<g class="drift2"><path d="' + wave(520, 12, 50, 5) + '" fill="#ffffff" opacity=".85"/></g>';
+    s += explorer('oc', 230, 462, 1, '#2f6f7a', 'fox');
+    return s;
+  },
+  'jardin': () => {
+    seed = 23;
+    let s = '<defs><linearGradient id="ja-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe8d2"/><stop offset="1" stop-color="#ffe0c2"/></linearGradient>' +
+      '<radialGradient id="ja-cap"><stop offset="0" stop-color="#fff6a8"/><stop offset="1" stop-color="#ff9fb3"/></radialGradient>' +
+      '<ellipse id="ja-petal" cx="0" cy="-38" rx="16" ry="40"/>' + glowDef('ja') + '</defs>';
+    s += '<rect width="1200" height="600" fill="url(#ja-sky)"/>';
+    const flower = (x, y, h, c1, c2, sc) => {
+      let g = '<path d="M' + x + ' 600 Q' + (x - 40) + ' ' + (y + h * 0.5) + ' ' + x + ' ' + y + '" fill="none" stroke="#3f8f5a" stroke-width="' + (10 * sc) + '"/>';
+      g += '<path d="M' + (x - 20) + ' ' + (y + h * 0.55) + ' q-60 -30 -90 10 q50 20 90 -10 Z" fill="#4fa868"/>';
+      g += '<g transform="translate(' + x + ' ' + y + ') scale(' + sc + ')">';
+      for (let i = 0; i < 8; i++) g += '<use href="#ja-petal" fill="' + (i % 2 ? c1 : c2) + '" transform="rotate(' + (i * 45) + ')"/>';
+      return g + '<circle r="16" fill="#ffd35c"/><circle r="9" fill="#f29a3b"/></g>';
+    };
+    s += '<g opacity=".55">' + flower(1050, 150, 450, '#f7b6c8', '#f39ab2', 1.6) + flower(120, 120, 480, '#c9b6f7', '#b49af3', 1.4) + '</g>';
+    s += '<path d="' + wave(360, 10, 80, 3) + '" fill="#ffffff" opacity=".55"/>';
+    s += flower(880, 190, 410, '#ff8fa8', '#ff6f8f', 1.9) + flower(420, 230, 370, '#ffb347', '#ff9a3c', 1.5) + flower(640, 300, 300, '#7fc8ff', '#5ab4f5', 1.1);
+    const mush = (x, w, h) => '<rect x="' + (x - w * 0.12) + '" y="' + (600 - h) + '" width="' + (w * 0.24) + '" height="' + h + '" rx="6" fill="#f6efe2"/><path d="M' + (x - w / 2) + ' ' + (600 - h + 6) + ' Q' + x + ' ' + (600 - h - w * 0.7) + ' ' + (x + w / 2) + ' ' + (600 - h + 6) + ' Z" fill="url(#ja-cap)"/><circle cx="' + (x - w * 0.15) + '" cy="' + (600 - h - w * 0.15) + '" r="' + (w * 0.05) + '" fill="#fff"/><circle cx="' + (x + w * 0.12) + '" cy="' + (600 - h - w * 0.22) + '" r="' + (w * 0.04) + '" fill="#fff"/>';
+    s += '<path d="' + wave(500, 8, 70, 1) + '" fill="#6fbf7a"/>';
+    s += mush(1010, 160, 120) + mush(1110, 90, 70) + mush(90, 120, 90);
+    s += '<path d="M200 600 Q400 540 560 545 Q700 550 760 600 Z" fill="#c9b79a"/>';
+    for (let i = 0; i < 7; i++) s += '<ellipse cx="' + (280 + i * 70) + '" cy="' + (575 - Math.sin(i / 2) * 14) + '" rx="22" ry="8" fill="#e8dcc6"/>';
+    s += '<g class="drift">';
+    for (let i = 0; i < 40; i++) s += '<circle cx="' + (rnd() * 1200).toFixed(0) + '" cy="' + (80 + rnd() * 420).toFixed(0) + '" r="' + (2 + rnd() * 3).toFixed(1) + '" fill="#fffbd1" opacity="' + (0.5 + rnd() * 0.5).toFixed(2) + '"/>';
+    s += '</g>';
+    s += explorer('ja', 560, 560, 1.05, '#7a3f8f', 'fox');
+    return s;
+  },
+  'lumiere': () => {
+    seed = 41;
+    let s = '<defs><linearGradient id="lu-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#173a5c"/><stop offset=".6" stop-color="#3f6e8f"/><stop offset="1" stop-color="#f3b6a8"/></linearGradient>' +
+      '<linearGradient id="lu-aur" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7ff5d0" stop-opacity="0"/><stop offset=".5" stop-color="#7ff5d0" stop-opacity=".6"/><stop offset="1" stop-color="#ffd1f0" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="lu-fall" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#bff3ff" stop-opacity=".9"/><stop offset="1" stop-color="#bff3ff" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="lu-cry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8fbff"/><stop offset="1" stop-color="#9fd8f0"/></linearGradient>' + glowDef('lu') + '</defs>';
+    s += '<rect width="1200" height="600" fill="url(#lu-sky)"/>';
+    s += '<g class="drift2"><path d="M-50 140 Q300 40 600 120 T1250 90 L1250 150 Q900 190 600 170 T-50 200 Z" fill="url(#lu-aur)"/><path d="M-50 220 Q350 150 700 200 T1250 170 L1250 210 Q850 250 600 240 T-50 260 Z" fill="url(#lu-aur)" opacity=".6"/></g>';
+    for (let i = 0; i < 60; i++) s += '<circle cx="' + (rnd() * 1200).toFixed(0) + '" cy="' + (rnd() * 260).toFixed(0) + '" r="' + (0.8 + rnd() * 1.6).toFixed(1) + '" fill="#fff" opacity="' + (0.4 + rnd() * 0.6).toFixed(2) + '"/>';
+    const floater = (cx, cy, w, h) => '<rect x="' + (cx - w * 0.12) + '" y="' + (cy - 260) + '" width="' + (w * 0.24) + '" height="260" fill="url(#lu-fall)"/>' + rock(cx, cy, w, h, '#4b5f7a', '#7fd6c6');
+    s += '<g class="bob">' + floater(300, 300, 160, 100) + floater(930, 250, 200, 120) + floater(640, 360, 90, 60) + '</g>';
+    s += '<path d="M760 600 Q760 430 860 430 Q960 430 960 600 L930 600 Q930 460 860 460 Q790 460 790 600 Z" fill="url(#lu-cry)" opacity=".85"/>';
+    s += '<path d="M860 430 L880 400 L870 440 Z M800 470 L770 450 L795 485 Z" fill="#e8fbff"/>';
+    s += '<path d="' + wave(470, 14, 80, 2) + '" fill="#f4d3e6" opacity=".55"/>';
+    s += '<g class="drift"><path d="' + wave(510, 12, 60, 4) + '" fill="#ffe9f2" opacity=".75"/></g>';
+    s += '<path d="' + wave(560, 8, 50, 1) + '" fill="#fff4f7"/>';
+    s += '<g class="drift2">';
+    for (let i = 0; i < 30; i++) s += '<circle cx="' + (rnd() * 1200).toFixed(0) + '" cy="' + (280 + rnd() * 280).toFixed(0) + '" r="' + (2 + rnd() * 3).toFixed(1) + '" fill="' + (i % 2 ? '#bff3ff' : '#ffe7a6') + '" opacity=".85"/>';
+    s += '</g>';
+    s += '<path d="M120 380 Q160 360 200 380 Q180 395 160 392 Q140 395 120 380 Z" fill="#dff7ff" opacity=".55"/>';
+    s += explorer('lu', 420, 572, 1, '#2f5f8f', 'owl');
+    return s;
+  }
+};
+
+Object.keys(scenes).forEach((k) => {
+  const svg = document.getElementById('s-' + k);
+  if (svg) svg.innerHTML = scenes[k]();
+});
+
+const msg = document.getElementById('copy-msg');
+document.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', async () => {
+  const t = document.getElementById(b.dataset.target);
+  try { await navigator.clipboard.writeText(t.textContent); if (msg) { msg.hidden = false; msg.textContent = 'Description copiée.'; } }
+  catch (e) { if (msg) { msg.hidden = false; msg.textContent = 'Copie impossible ici : sélectionne le texte à la main.'; } }
+}));
+}
+</script>
+</body>
+</html>

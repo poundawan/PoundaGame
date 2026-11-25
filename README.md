@@ -9,4 +9,5 @@ qui sert de **Maître du Jeu autonome** (ou d'assistant pour un MJ incarné).
 ## Documentation
 
 - [Document de concept](docs/concept.md)
+- [Planches d'ambiance du Voile](docs/illustrations/voile.html)
 - Suivi des sujets : le tableau de bord en ligne fait référence ([instantané initial](docs/suivi.json))
