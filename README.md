@@ -11,4 +11,5 @@ qui sert de **Maître du Jeu autonome** (ou d'assistant pour un MJ incarné).
 - [Document de concept](docs/concept.md)
 - [Planches d'ambiance du Voile](docs/illustrations/voile.html)
 - [Portraits des peuples jouables](docs/illustrations/races.html)
+- [Descriptions visuelles des races (pour générateur d'images)](docs/descriptions-races.md)
 - Suivi des sujets : le tableau de bord en ligne fait référence ([instantané initial](docs/suivi.json))
