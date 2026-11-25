@@ -1,6 +1,6 @@
 # Document de concept — *Les Lanterniers* (titre provisoire)
 
-> Version 0.1 — proposition de départ, tout est discutable.
+> Version 0.2 — l'univers est encore ouvert (voir §11). Les décisions déjà prises sont listées au §10.
 
 ## 1. Pitch
 
@@ -37,20 +37,22 @@ pour retrouver des villages disparus, sauver des égarés et percer le secret de
    - les ennemis s'activent (l'appli indique leurs mouvements et attaques) ;
    - un éventuel événement narratif survient.
 4. On recommence jusqu'à la victoire (objectif du scénario) ou la défaite
-   (Lanterne éteinte, ou tous les héros à terre).
+   (selon le scénario, ou tous les héros à terre).
 
-## 4. Résolution des actions (dés)
+## 4. Résolution des actions (dés) — proposition « jet sous la carac »
 
-Système simple, lisible dès 10 ans, mais qui fait rouler tous les dés :
+Inspiré d'Aria : **on lance 1d20 et il faut faire inférieur ou égal à son score**. Une seule règle pour tout.
 
-- **Test** : `d20 + Caractéristique ≥ Difficulté` (Facile 8 · Normal 12 · Difficile 16 · Héroïque 20).
-- **3 caractéristiques** : **Force**, **Agilité**, **Esprit** (de +0 à +5).
-- **20 naturel** = réussite critique · **1 naturel** = complication narrative (l'appli décide).
+- **Caractéristiques** notées de **1 à 20** (un héros débutant a entre 8 et 14).
+- **Test simple** : `d20 ≤ score` → réussi.
+- **Difficulté** : l'appli (ou le MJ) applique un modificateur au score : Facile +3 · Normal 0 · Difficile −3 · Héroïque −6.
+- **1 naturel** = réussite critique · **20 naturel** = échec critique (complication narrative).
+- **Attaque** : `d20 ≤ score d'attaque − Armure de la cible`.
+  Ex. : Lame avec Adresse 13 contre un Rôdeur d'Armure 2 → il faut faire 11 ou moins.
 - **Dégâts** : selon l'arme / le sort → d4 (dague) · d6 (épée courte) · d8 (épée) · d10 (hache) · d12 (arme lourde / grand sort).
-- **Défense** : chaque héros a une valeur d'Armure qui sert de difficulté aux attaques ennemies.
+- **Ennemis** : l'appli fait leurs jets avec la même règle (score d'attaque de l'ennemi − Armure du héros).
 
-Les joueurs lancent de vrais dés et **saisissent le résultat dans l'appli** (ou cochent « réussi / raté »
-pour aller vite). Les jets des ennemis sont faits par l'appli.
+Les joueurs lancent de vrais dés et saisissent le résultat dans l'appli (ou cochent « réussi / raté »).
 
 ## 5. Les héros (6 classes de départ)
 
@@ -116,10 +118,17 @@ de Brumeval, disparus dans la nuit.
 6. ⬜ Simulations d'équilibrage + tests de parties
 7. ⬜ Campagne complète, mode MJ incarné, ambiance sonore
 
-## 10. Questions ouvertes
+## 10. Décisions prises
 
-- Titre définitif et nom de l'univers ?
-- Tuiles **hexagonales** ou **carrées** ?
-- PV des héros suivis **sur fiche physique** ou **dans l'appli** ?
-- Mort d'un héros : simplement « à terre » (réanimable) ou conséquences permanentes en campagne ?
-- Ton : plutôt lumineux/aventure ou plus sombre ?
+- **Tests** : jet sous la caractéristique au d20, façon Aria (voir §4, à valider pour les attaques).
+- **Tuiles carrées**.
+- **Points de vie** : suivis **sur la fiche physique (jetons) et dans l'appli** en miroir.
+- **Héros vaincu** : il est « à terre » pour le reste de la mission, mais **peut faire la mission suivante** ;
+  il gagne **moins d'expérience** (ex. moitié).
+- **Ton** : à décider plus tard.
+
+## 11. Questions ouvertes
+
+- **Univers** : la Brume/Lanternes n'est qu'une piste, d'autres sont à l'étude.
+- Titre définitif.
+- Nombre et noms des caractéristiques (3 ou 4 ?).
