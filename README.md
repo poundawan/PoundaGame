@@ -9,3 +9,4 @@ qui sert de **Maître du Jeu autonome** (ou d'assistant pour un MJ incarné).
 ## Documentation
 
 - [Document de concept](docs/concept.md)
+- [Suivi des sujets (données du tableau de bord)](docs/suivi.json)

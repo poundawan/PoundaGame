@@ -1,0 +1,289 @@
+[
+ {
+  "id": "s01",
+  "categorie": "Format",
+  "sujet": "Jeu coopératif hybride JdR × plateau",
+  "detail": "Les joueurs font équipe contre le jeu, avec une vraie part de narration.",
+  "statut": "valide"
+ },
+ {
+  "id": "s02",
+  "categorie": "Format",
+  "sujet": "1 à 6 joueurs",
+  "detail": "Le jeu doit fonctionner en solo comme à six.",
+  "statut": "valide"
+ },
+ {
+  "id": "s03",
+  "categorie": "Format",
+  "sujet": "À partir de 10 ans",
+  "detail": "Règles simples, lisibles par des enfants.",
+  "statut": "valide"
+ },
+ {
+  "id": "s04",
+  "categorie": "Format",
+  "sujet": "Environ 1 h par scénario",
+  "detail": "Les scénarios peuvent s'enchaîner en campagne.",
+  "statut": "valide"
+ },
+ {
+  "id": "s05",
+  "categorie": "Univers",
+  "sujet": "Univers fantasy",
+  "detail": "Le monde précis reste à choisir.",
+  "statut": "valide"
+ },
+ {
+  "id": "s06",
+  "categorie": "Matériel",
+  "sujet": "Plateau modulaire en tuiles carrées",
+  "detail": "Tuiles posées au fil de l'exploration, sur indication de l'appli.",
+  "statut": "valide"
+ },
+ {
+  "id": "s07",
+  "categorie": "Matériel",
+  "sujet": "Cartes, figurines et dés d4 à d20",
+  "detail": "Tous les dés de type DnD sont utilisés.",
+  "statut": "valide"
+ },
+ {
+  "id": "s08",
+  "categorie": "Application",
+  "sujet": "Appli indispensable, MJ autonome",
+  "detail": "Fonctionnement à la manière d'Erune : l'appli mène la partie.",
+  "statut": "valide"
+ },
+ {
+  "id": "s09",
+  "categorie": "Règles",
+  "sujet": "Tests : d20 ≤ caractéristique",
+  "detail": "Système façon Aria. Caractéristiques de 1 à 20. Chiffres ajustables plus tard.",
+  "statut": "valide"
+ },
+ {
+  "id": "s10",
+  "categorie": "Règles",
+  "sujet": "Attaque : d20 ≤ score − Armure",
+  "detail": "Armure de 0 à 6 : chaque point retire 5 % de chances de toucher.",
+  "statut": "valide"
+ },
+ {
+  "id": "s11",
+  "categorie": "Règles",
+  "sujet": "Critiques : 1 réussit, 20 échoue",
+  "detail": "Un 1 naturel touche toujours, même contre une grosse armure.",
+  "statut": "valide"
+ },
+ {
+  "id": "s12",
+  "categorie": "Règles",
+  "sujet": "Dégâts au dé de l'arme",
+  "detail": "Dague d4, épée courte d6, épée d8, hache d10, arme lourde d12.",
+  "statut": "valide"
+ },
+ {
+  "id": "s13",
+  "categorie": "Règles",
+  "sujet": "PV sur fiche physique et dans l'appli",
+  "detail": "Jetons sur la fiche, copie en miroir dans l'appli.",
+  "statut": "valide"
+ },
+ {
+  "id": "s14",
+  "categorie": "Campagne",
+  "sujet": "Héros vaincu : mission suivante possible",
+  "detail": "Il reste à terre jusqu'à la fin de la mission et gagne moins d'expérience.",
+  "statut": "valide"
+ },
+ {
+  "id": "s15",
+  "categorie": "Projet",
+  "sujet": "Claude réalise toute la partie technique",
+  "detail": "Appli, simulations et documents.",
+  "statut": "valide"
+ },
+ {
+  "id": "s16",
+  "categorie": "Univers",
+  "sujet": "Choisir l'univers",
+  "detail": "Pistes : la Brume, le Dos du Dragon, l'Archipel errant, l'Arbre-Monde, les Ruines d'Eldar, ou une autre idée.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s17",
+  "categorie": "Univers",
+  "sujet": "Titre du jeu",
+  "detail": "Dépend de l'univers retenu.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s18",
+  "categorie": "Règles",
+  "sujet": "Nombre et noms des caractéristiques",
+  "detail": "3 (Force, Adresse, Esprit) ou 4 avec le Charisme pour les dialogues.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s19",
+  "categorie": "Règles",
+  "sujet": "Déroulement d'un tour",
+  "detail": "2 actions par héros (se déplacer, attaquer, fouiller, interagir, compétence), puis le tour du jeu.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s20",
+  "categorie": "Règles",
+  "sujet": "Chronomètre de la partie",
+  "detail": "La mécanique qui fait tenir la partie en 1 h et crée la tension. Dépend de l'univers.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s21",
+  "categorie": "Règles",
+  "sujet": "Déplacement sur les tuiles carrées",
+  "detail": "Nombre de cases par action, diagonales autorisées ou non, obstacles.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s22",
+  "categorie": "Règles",
+  "sujet": "Jouer de 1 à 6 joueurs",
+  "detail": "En solo, un ou deux héros ? Comment l'appli adapte la difficulté.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s23",
+  "categorie": "Héros",
+  "sujet": "Classes de héros",
+  "detail": "6 proposées : Gardien, Lame, Arcaniste, Sylvain, Chasseur, Porte-Lanterne. À adapter à l'univers.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s24",
+  "categorie": "Campagne",
+  "sujet": "Expérience perdue en cas de défaite",
+  "detail": "Moitié de l'expérience ? Autre pénalité ?",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s25",
+  "categorie": "Scénarios",
+  "sujet": "Premier scénario",
+  "detail": "Histoire et objectifs d'une première mission jouable.",
+  "statut": "reflechir"
+ },
+ {
+  "id": "s26",
+  "categorie": "Univers",
+  "sujet": "Ton du jeu",
+  "detail": "Aventure lumineuse ou ambiance plus sombre.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s27",
+  "categorie": "Règles",
+  "sujet": "Ajustement des chiffres",
+  "detail": "Échelle d'Armure, difficultés, PV : à revoir après les tests.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s28",
+  "categorie": "Règles",
+  "sujet": "Ennemis et leur comportement",
+  "detail": "Bestiaire, statistiques, règles que suit l'appli pour les faire agir.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s29",
+  "categorie": "Héros",
+  "sujet": "Progression des héros",
+  "detail": "Niveaux, nouvelles compétences, deck qui grandit.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s30",
+  "categorie": "Matériel",
+  "sujet": "Équipement et trésors",
+  "detail": "Armes, armures, objets magiques, sous forme de cartes.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s31",
+  "categorie": "Matériel",
+  "sujet": "Liste et taille des tuiles",
+  "detail": "Nombre de tuiles, dimensions, types de terrain.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s32",
+  "categorie": "Matériel",
+  "sujet": "Direction artistique",
+  "detail": "Style des illustrations, des cartes et des figurines.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s33",
+  "categorie": "Matériel",
+  "sujet": "Version à imprimer soi-même",
+  "detail": "Tuiles, cartes et fiches à imprimer pour tester autour d'une table.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s34",
+  "categorie": "Application",
+  "sujet": "Prototype de l'appli",
+  "detail": "Application web (téléphone, tablette, PC), scénarios en fichiers de données.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s35",
+  "categorie": "Application",
+  "sujet": "Mode MJ incarné",
+  "detail": "L'appli devient le tableau de bord d'un MJ humain.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s36",
+  "categorie": "Application",
+  "sujet": "Ambiance sonore et voix",
+  "detail": "Musique, bruitages, narration lue.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s37",
+  "categorie": "Application",
+  "sujet": "Narration enrichie par IA",
+  "detail": "Descriptions et dialogues improvisés, en option.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s38",
+  "categorie": "Tests",
+  "sujet": "Simulations d'équilibrage",
+  "detail": "Milliers de parties automatiques pour repérer les déséquilibres.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s39",
+  "categorie": "Tests",
+  "sujet": "Parties de test",
+  "detail": "Tester avec de vrais joueurs, puis ajuster.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s40",
+  "categorie": "Scénarios",
+  "sujet": "Campagne complète",
+  "detail": "Suite de scénarios reliés par une histoire.",
+  "statut": "plus_tard"
+ },
+ {
+  "id": "s41",
+  "categorie": "Projet",
+  "sujet": "Fabrication et édition",
+  "detail": "Impression, financement participatif, éditeur…",
+  "statut": "plus_tard"
+ }
+]
