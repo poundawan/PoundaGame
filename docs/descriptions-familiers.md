@@ -1,0 +1,28 @@
+# Prompts des familiers du Voile
+
+Chaque prompt est autonome : le copier dans Gemini en joignant l'image de l'Humaine (`docs/illustrations/gemini/humain-v1.jpg`) comme référence de style.
+Les familiers sont des créatures nées dans le Voile : chacun porte une petite touche lumineuse ou nacrée qui rappelle la brume.
+
+## Gecko luminescent
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un petit gecko de la taille d'un chat, agrippé à un rocher dans une pose vive. Peau lisse vert d'eau translucide, parsemée de motifs qui brillent d'une douce lumière turquoise et dorée, comme de la bioluminescence. Grands yeux ronds et brillants couleur ambre, pattes aux doigts larges et adhésifs, longue queue enroulée dont le bout luit plus fort, comme une petite lanterne. Expression curieuse et malicieuse. Mignon, pas inquiétant.
+
+## Hibou bleu
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un hibou de taille moyenne au plumage bleu profond dégradé vers le bleu ciel sur le ventre, avec des reflets nacrés au bout des plumes. Aigrettes de plumes sur la tête, grands yeux ronds argentés et lumineux, regard attentif et sage. Ailes à moitié déployées comme s'il allait s'envoler, serres dorées posées sur une branche tordue. Quelques plumes semblent se fondre dans une légère brume. Allure élégante et vigilante.
+
+## Lynx de nuit
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un lynx de la taille d'un gros chien, souple et silencieux, dans une pose de chasseur à l'affût. Pelage gris anthracite et bleu nuit, parsemé de petites taches argentées qui scintillent comme un ciel étoilé. Longues touffes de poils noirs au bout des oreilles, favoris épais, courte queue à bout noir. Grands yeux violets lumineux. Démarche feutrée, regard intelligent et un peu espiègle. Élégant et mystérieux, pas menaçant.
+
+## Chacal des brumes
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un chacal élancé de taille moyenne, aux longues pattes fines et aux grandes oreilles pointues dressées. Pelage gris perle et sable, dont les contours se dissolvent en volutes de brume blanche le long du dos, de la queue et des pattes, comme s'il était à moitié fait de brouillard. Yeux jaune pâle lumineux, museau fin, posture de pisteur, truffe au vent, prêt à bondir. Allure fière et loyale, chasseur rusé mais pas effrayant.
+
+## Tatou des roches
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un tatou trapu de la taille d'un chien moyen. Sa carapace est faite de plaques de pierre grise et ocre, comme des ardoises superposées, avec des veines de cristal bleu pâle qui luisent doucement entre les plaques. Petite tête pointue au museau rose, petites oreilles, yeux noirs ronds et doux, griffes puissantes pour creuser. Pose solide et protectrice, un peu bourru mais très attachant. Montrer en petit à côté sa forme roulée en boule de pierre.
+
+## Panda des rêves
+Illustration de créature pour un jeu de société fantasy familial (dès 10 ans). Reprends exactement le style de l'image de référence jointe : peinture numérique lumineuse et colorée, contours doux, textures légères, rendu proche des illustrations de jeux de plateau modernes. Créature seule, en entier, de trois quarts, sur fond neutre clair avec une légère brume nacrée, ombre douce au sol. Pas de texte ni de logo.
+Un panda roux, de la taille d'un gros chat, à la silhouette et au visage de panda roux (museau court, joues rondes, oreilles pointues, longue queue touffue annelée), mais au pelage blanc nacré avec des rayures et des anneaux bleu turquoise et bleu ciel. Masque facial blanc avec des marques turquoise sous les yeux. Yeux mi-clos, rêveurs et doux, d'un bleu lumineux. Autour de lui flottent de petites bulles et des volutes de brume scintillante, comme des rêves. Pose paisible, assis ou en train de bâiller. Très mignon et apaisant.
