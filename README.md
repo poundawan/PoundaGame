@@ -15,3 +15,5 @@ qui sert de **Maître du Jeu autonome** (ou d'assistant pour un MJ incarné).
 - [Prompts des familiers (pour générateur d'images)](docs/descriptions-familiers.md)
 - [Prompts des créatures de la forêt (pour générateur d'images)](docs/descriptions-creatures.md)
 - Suivi des sujets : le tableau de bord en ligne fait référence ([instantané initial](docs/suivi.json))
+
+- Tuiles de la mission 1 : [docs/tuiles/mission1.html](docs/tuiles/mission1.html) · [page en ligne](https://claude.ai/artifact/6zANAEQLYsG1iyQwWbr5ak)
