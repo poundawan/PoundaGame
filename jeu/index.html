@@ -234,8 +234,8 @@ function placeHeroes(side){
   for(const[dx,dy]of[[1,0],[0,1],[0,-1],[-1,0]])q.push([x+dx,y+dy]);}
  hs.forEach((h,i)=>{if(spots[i]){h.x=spots[i][0];h.y=spots[i][1];}});}
 function spawn(kind,x,y){const n=heroes().length;const C=CRE[kind];const f=C.boss?0.5:0.25;
- const pv=C.fixed?C.pv:Math.round(C.pv*(1+f*(n-2))+1e-9);
- const u={id:'c'+(G.uid++),side:'c',kind,name:C.name||C.n,pv,pv0:pv,def:C.def,att:C.att,dmg:C.dmg,mv:C.mv,fly:!!C.fly,big:!!C.boss,x,y,sleep:0,stuck:0,slow:0,lured:null,blind:0};
+ const pv=C.fixed?C.pv:Math.round(C.pv*(TUNE.pvMul||1)*(1+f*(n-2))+1e-9);
+ const u={id:'c'+(G.uid++),side:'c',kind,name:C.name||C.n,pv,pv0:pv,def:C.def,att:C.att+(C.att?(TUNE.att||0):0),dmg:C.dmg,mv:C.mv,fly:!!C.fly,big:!!C.boss,x,y,sleep:0,stuck:0,slow:0,lured:null,blind:0};
  u.name=C.n;G.units.push(u);return u;}
 function freeCells(pred){const out=[];for(let y=0;y<8;y++)for(let x=0;x<8;x++){const ch=cell(x,y);if(solid(ch)||'OZ'.includes(ch))continue;if(unitAt(x,y))continue;if(pred&&!pred(x,y,ch))continue;out.push([x,y]);}return out;}
 function far(n){const hs=alive('h');return shuffle(freeCells((x,y)=>hs.every((h)=>Math.abs(h.x-x)+Math.abs(h.y-y)>=4))).slice(0,n);}
@@ -275,13 +275,14 @@ function nextHero(){
   if(G.turn>=G.order.length){voilePhase();if(G.over||G.mode!=='combat')return;G.round++;G.turn=0;}
   const h=byId(G.order[G.turn]);if(h&&!h.down){startHeroTurn(h);return;}}}
 function startHeroTurn(h){
- G.sel=h.id;G.acts=2;h.e=Math.min(h.e0,h.e+1);h.riposte=false;h.dodge=false;h.moved=false;
+ G.sel=h.id;G.acts=2;h.e=Math.min(h.e0,h.e+1);if(!TUNE.riposteLong)h.riposte=false;h.dodge=false;h.moved=false;
  if(h.immune){h.immune=false;}
  log(`Tour de ${h.name} (${CLASSES[h.cls].n}) · ${h.e} Éclats.`,'');}
 function attackScore(h,t){let s=h.mai-h.malus-t.def;
  if(Object.entries(G.force).some(([c,id])=>id===h.id&&byId(c)&&!byId(c).down))s+=2;
- if(Object.values(G.illum).includes(t.id))s+=2;
+ if(Object.values(G.illum).includes(t.id))s+=(TUNE.illum??2);
  if(h.hitb){s+=h.hitb;}
+ if(h.cls==='rempart'&&TUNE.ramp&&G.mode==='combat')s+=Math.min(TUNE.ramp,G.round-1);
  return s;}
 function hurt(t,n,src){
  if(t.side==='h'){if(t.immune){log(`${t.name} est protégé par sa carapace : aucun dégât.`,'good');return;}
@@ -315,7 +316,7 @@ function spend(h,c){h.e-=c;G.acts--;}
 function afterAction(){if(G.over)return render();if(G.mode!=='combat')return render();const h=curHero();if(!h||h.down||G.acts<=0)nextHero();render();}
 function heroAttack(h,t,die,label){
  const s=attackScore(h,t);if(roll(s,`${label} de ${h.name} sur ${t.name}`)){
-  let dm=d(die)+h.dmgb;if(h.dmgx){dm+=d(4);h.dmgx=false;log('Morsure du Chacal : +d4.','');}
+  let dm=d(die)+h.dmgb+(h.cls==='rempart'&&TUNE.ramp&&G.mode==='combat'?Math.min(TUNE.ramp,G.round-1):0);if(h.dmgx){dm+=d(4);h.dmgx=false;log('Morsure du Chacal : +d4.','');}
   h.hitb=0;hurt(t,dm,h);return true;}h.hitb=0;return false;}
 function castSpell(h,sid,tgt){
  const S=SP[sid];spend(h,S.c);
@@ -388,7 +389,7 @@ function voilePhase(){
  checkEnd();}
 function creatureAttack(c,t){
  let s=c.att-t.def-(c.blind?3:0)-(t.dodge?2:0);
- if(Object.values(G.armor).includes(t.id))s-=2;
+ if(Object.values(G.armor).includes(t.id))s-=(TUNE.armor??2);
  if(c.kind==='cracheur'&&cell(t.x,t.y)==='F')s-=2;
  if(t.riposte&&dist(c,t)===1&&c.kind!=='cracheur'){log(`Riposte de ${t.name} !`,'good');hurt(c,d(4),t);if(c.pv<=0)return;}
  if(roll(s,`${c.name} attaque ${t.name}`)){hurt(t,d(c.dmg),c);
@@ -403,7 +404,7 @@ function bossTurn(b,leurre){
     if(opts[0]){farH.x=opts[0][0];farH.y=opts[0][1];}}log(`${farH.name} avance, fasciné, vers la lumière.`,'bad');}}
  const inr=hs.filter((h)=>dist(h,b)<=4);if(!inr.length){log('Le Lumivore guette, immobile.','');return;}
  const t=inr.sort((a,c)=>a.pv-c.pv)[0];
- if(roll(b.att-t.def-(Object.values(G.armor).includes(t.id)?2:0)-(t.dodge?2:0)-(b.blind?3:0),`Langue du Lumivore sur ${t.name}`)){hurt(t,d(6),b);
+ if(roll(b.att-t.def-(Object.values(G.armor).includes(t.id)?(TUNE.armor??2):0)-(t.dodge?2:0)-(b.blind?3:0),`Langue du Lumivore sur ${t.name}`)){hurt(t,d(6),b);
   if(!t.down&&dist(t,b)>1){const spot=freeCells((x,y)=>dist({x,y},b)===1&&stepCost(t,cell(x,y))<99).sort((p,q)=>(Math.abs(p[0]-t.x)+Math.abs(p[1]-t.y))-(Math.abs(q[0]-t.x)+Math.abs(q[1]-t.y)))[0];
    if(spot){t.x=spot[0];t.y=spot[1];log(`${t.name} est tiré contre le Lumivore !`,'bad');}}}}
 
@@ -561,6 +562,10 @@ function drawFoes(){const cs=alive('c');
  $('foes').innerHTML=`<h3>${cs.length?'Créatures':'Aucune créature en vue'}</h3>`+cs.map((c)=>`<div class="hero"><span class="dot" style="background:${CRE[c.kind].c}"></span><div><b>${esc(c.name)}</b> <span class="mini">att ${c.att} · déf ${c.def} · d${c.dmg}${c.sleep?' · endormi':''}${c.stuck?' · immobilisé':''}</span><div class="hp"><div style="width:${100*c.pv/c.pv0}%;background:#e2675b"></div></div></div><span class="mini">${c.pv}/${c.pv0}</span></div>`).join('');}
 
 
+
+const TUNE={};
+window.PG_TUNE=function(p){Object.keys(TUNE).forEach((k)=>delete TUNE[k]);Object.assign(TUNE,p.tune||{});
+ if(p.sp)Object.entries(p.sp).forEach(([k,v])=>Object.assign(SP[k],v));if(p.cls)Object.entries(p.cls).forEach(([k,v])=>Object.assign(CLASSES[k],v));if(p.cre)Object.entries(p.cre).forEach(([k,v])=>Object.assign(CRE[k],v));};
 /* ================= IA, simulation et replay ================= */
 const SIM={auto:false,silent:false,replay:false,frames:[],timer:null,speed:450,paused:false,idx:0,fullLog:[]};
 function snap(){if(SIM.noSnap)return;SIM.frames.push(JSON.stringify(Object.assign({},G,{pending:null,log:G.log.length})));}
@@ -598,7 +603,7 @@ function aiCombatStep(){
  if(h.e>=1){
   if(h.cls==='tisseur'){const hurtA=alive('h').filter((u)=>u.pv<=0.5*u.pv0&&dist(u,h)<=4).sort((a,b)=>a.pv-b.pv)[0];if(hurtA){castSpell(h,'lienvie',hurtA);return;}
    if(!G.force[h.id]||!byId(G.force[h.id])||byId(G.force[h.id]).down){const al=alive('h').filter((u)=>u!==h&&dist(u,h)<=4).sort((a,b)=>CLASSES[b.cls].mai-CLASSES[a.cls].mai)[0];if(al&&alive('c').length>=2){castSpell(h,'lienforce',al);return;}}}
-  if(h.cls==='rempart'){const adj=alive('c').filter((c)=>dist(c,h)===1).length;if(adj>=2&&!h.riposte){castSpell(h,'riposte',h);return;}
+  if(h.cls==='rempart'){const adj=alive('c').filter((c)=>dist(c,h)===1).length;if(adj>=(TUNE.riposteLong?1:2)&&!h.riposte){castSpell(h,'riposte',h);return;}
    if(!G.armor[h.id]||!byId(G.armor[h.id])||byId(G.armor[h.id]).down){const al=alive('h').filter((u)=>dist(u,h)<=1).sort((a,b)=>a.def-b.def)[0];if(al){castSpell(h,'armure',al);return;}}}
   if(h.cls==='pisteur'&&!G.illum[h.id]){const big=alive('c').find((c)=>(c.kind==='blaireau'||c.kind==='lumivore')&&dist(c,h)<=6&&!G.diving);if(big){castSpell(h,'cible',big);return;}}}
  const atk=bestAttack(h);if(atk&&atk[2]>0.2){castSpell(h,atk[0],atk[1]);return;}
