@@ -48,7 +48,7 @@ p{margin:0 0 10px;max-width:72ch}
 <body>
 <header class="band"><div class="wrap">
 <h1>Mission 1 : les 7 tuiles de la forêt</h1>
-<p class="lede">Une face par tuile, 8 × 8 cases, sorties de 2 cases au milieu des côtés. Le chemin le plus court traverse 6 tuiles ; à la sortie des ruines, le groupe choisit entre un raccourci dans la brume et un détour par la champignonnière.</p>
+<p class="lede">Une face par tuile, 8 × 8 cases, sorties de 2 cases au milieu des côtés. Le chemin le plus court traverse 6 tuiles ; à la sortie du chaos de pierres, le groupe choisit entre un raccourci dans la brume et un détour par la champignonnière.</p>
 <div class="top">
 <div class="panel map"><h3>Enchaînement</h3><svg id="plan" viewBox="0 0 560 300" role="img" aria-label="Plan de la mission : quatre tuiles en ligne, puis deux chemins vers la clairière du Lumivore"></svg></div>
 <div class="panel"><h3>Légende</h3><div class="legend" id="legende"></div></div>
@@ -88,9 +88,9 @@ const tiles = [
   {id:'t3', n:3, name:'Gué du ruisseau', role:'Exploration', exits:'OE', brume:false,
    g:['TTTOOTTT','T..OO..T','T.ROO.PT','...WW...','...WW...','T..OO.RT','TF.OO..T','TTTOOTTT'],
    f:['Seul passage : le gué de 2 cases (eau peu profonde).','Les Loutres traversent partout et à pleine vitesse.','Fouille (?) au bord de l’eau : cristal de lumière (+2 charges).']},
-  {id:'t4', n:4, name:'Ruines envahies', role:'Combat standard · embranchement', exits:'ONE', brume:false,
-   g:['MMM..MMM','M..S...M','M.MM.M.M','...A.S..','........','M.M..MMM','M.S...PM','MMMMMMMM'],
-   f:['Combat : 5 Chenilles et 1 Phalène.','Autel (!) : l’activer révèle les deux chemins (nord : brume, est : champignonnière).','Fouille (?) dans un recoin : trésor.']},
+  {id:'t4', n:4, name:'Le Chaos de pierres', role:'Combat standard · embranchement', exits:'ONE', brume:false,
+   g:['RRR..RRR','R..S...R','R.RR.R.R','...A.S..','........','R.R..RRR','R.S...PR','RRRRRRRR'],
+   f:['Combat : 5 Chenilles et 1 Phalène.','Borne (!) près d’une porte de pierre scellée : l’activer révèle les deux chemins (nord : brume, est : champignonnière).','Fouille (?) dans un recoin : trésor.']},
   {id:'t5', n:5, name:'Saulaie brumeuse', role:'Raccourci', exits:'SE', brume:true,
    g:['TTTTTTTT','TD..S.DT','T.T.DT.T','T.D.P...','TF..D...','T.T.DT.T','TD....DT','TTT..TTT'],
    f:['Brume épaisse sur toute la tuile : −1 charge de plus par tour.','Racines partout : avancer coûte cher.','Apparition (S) : deux Phalènes attirées par la lanterne.']},

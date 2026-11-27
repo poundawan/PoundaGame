@@ -108,19 +108,19 @@ select,input{background:var(--panel2);border:1px solid var(--line);border-radius
 /* ================= Données ================= */
 const TILES={
  t1:{name:'Lisière du Voile',role:'Départ',g:['TTTTTTTT','T..F...T','T.P...FT','HHA.....','HH......','T...F..T','TF....TT','TTTTTTTT'],exits:{E:'t2'},
-  story:'La route lanternée s’arrête ici. Devant vous, la brume avale les arbres. Le grand Lumignon s’élève et vous suit.',clue:'Une inscription griffée par d’anciens Explorateurs : « Ne suivez pas la lumière qui attend. »'},
+  story:'La route pavée de Lugdon s’arrête net, au pied d’un mur de brume blanche. Derrière vous, la foule retient son souffle. Devant, les arbres disparaissent à quelques pas, comme effacés. Le grand Lumignon s’allume et monte au-dessus de vos têtes. La brume recule en frémissant, et la forêt apparaît : des troncs noirs, des fougères perlées de gouttes, un silence épais. Au pied d’un vieux chêne, à votre gauche, quelque chose de pâle dépasse de la mousse. Les tentatives d’autrefois n’ont pas toutes été oubliées par la forêt.',clue:'Sous la mousse, un vieux masque de cuir, rongé par le temps : le vestige d’une tentative d’autrefois. À l’intérieur, quelqu’un a gravé : « Ne suivez pas la lumière qui attend. »'},
  t2:{name:'Sous-bois aux fougères',role:'Exploration',g:['TTTTTTTT','T.FFP.FT','T.TTT..T','......F.','.F......','T..TTT.T','TF....FT','TTTTTTTT'],exits:{E:'t3'},event:'chenilles',
-  story:'Deux troncs couchés forment des couloirs de fougères. Quelque chose bruisse sous les feuilles.'},
+  story:'Deux arbres immenses se sont couchés en travers du chemin, il y a longtemps. Leurs troncs, couverts de mousse, forment des couloirs où la lumière du Lumignon se faufile. Les fougères vous arrivent à la taille et bruissent sans qu’il y ait de vent. Entre les deux grandes touffes, tout au fond, un éclat bleuté clignote, puis s’éteint, puis revient. Quelque chose de petit vous observe… ou quelque chose de précieux attend d’être ramassé.'},
  t3:{name:'Gué du ruisseau',role:'Exploration',g:['TTTOOTTT','T..OO..T','T.ROO.PT','...WW...','...WW...','T..OO.RT','TF.OO..T','TTTOOTTT'],exits:{E:'t4'},
-  secret:{nom:'la Grotte sous le gué',niveau:3,danger:'☠☠'},story:'Un ruisseau noir coupe la forêt. Seul un gué de pierres plates permet de passer.'},
- t4:{name:'Ruines envahies',role:'Combat · embranchement',g:['MMM..MMM','M..S...M','M.MM.M.M','...A.S..','........','M.M..MMM','M.S...PM','MMMMMMMM'],exits:{N:'t5',E:'t6'},hidden:true,fight:'ruines',
-  story:'Des murs couverts de lierre. Au centre, un autel éteint. Des chenilles luisantes sortent des fissures !'},
+  secret:{nom:'la Grotte sous le gué',niveau:3,danger:'☠☠'},story:'Un ruisseau d’eau noire et glacée coupe la forêt en deux. Il est trop profond pour être traversé, sauf à un endroit où de larges pierres plates affleurent. L’eau y chante doucement. Un peu plus loin, elle disparaît dans un trou sombre, sous la berge, comme si la terre l’avalait. Sur l’autre rive, entre deux rochers, quelque chose brille au ras de l’eau, d’une lumière qui ne vient pas de votre Lumignon. Cette eau est claire. Elle pourrait faire vivre un camp.'},
+ t4:{name:'Le Chaos de pierres',role:'Combat · embranchement',g:['RRR..RRR','R..S...R','R.RR.R.R','...A.S..','........','R.R..RRR','R.S...PR','RRRRRRRR'],exits:{N:'t5',E:'t6'},hidden:true,fight:'ruines',
+  story:'Des blocs de roche énormes, couverts de lierre, s’entassent comme si un géant les avait jetés là. Entre eux, des couloirs étroits. Au centre, à moitié enfouie dans la mousse, une forme ne ressemble à aucun rocher : une arche de pierre taillée, fermée par une dalle lisse, et à côté, une borne basse couverte de signes usés. Personne ne vous a parlé de ça. Quand le Lumignon s’approche, les signes s’éclairent d’une lueur pâle. Et des fissures de la roche, des chenilles luisantes commencent à sortir…'},
  t5:{name:'Saulaie brumeuse',role:'Raccourci · brume épaisse',g:['TTTTTTTT','TD..S.DT','T.T.DT.T','T.D.P...','TF..D...','T.T.DT.T','TD....DT','TTT..TTT'],exits:{E:'t7'},brume:true,fight:'saulaie',
-  secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'La brume est si épaisse que le Lumignon peine. Des racines partout, et des battements d’ailes au-dessus.'},
+  secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'Ici, la brume est si épaisse qu’elle colle à la peau. Le Lumignon grésille et sa lumière se tord, comme s’il peinait à respirer. Des saules aux branches tombantes forment un rideau gris, et leurs racines sortent de terre partout, en boucles et en nœuds. Au milieu de la clairière, une racine plus large que les autres plonge droit dans le sol, et l’on entend, tout au fond, un écho qui n’en finit pas. Au-dessus de vous, des battements d’ailes lents et lourds.'},
  t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T...K..T','..L..V.T','......LT','T......T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
-  story:'Des champignons géants, des spores dorées… et des fleurs qui brillent comme de petites lanternes.'},
+  story:'Des champignons plus hauts que vous dressent leurs chapeaux tachetés dans une lumière dorée. Une poussière fine flotte dans l’air et pique les yeux. Mais partout, au pied des troncs, des fleurs brillent d’elles-mêmes : de vraies petites lanternes vivantes, dont la lumière semble attirer celle du Lumignon. Un grognement sourd monte du sol. La terre est retournée, labourée par de grosses griffes. Quelque chose vit ici et garde ces fleurs. Dans le coin le plus sombre, un renflement sous les champignons a une forme bien trop régulière.'},
  t7:{name:'Clairière du Lumivore',role:'Boss',g:['TTTTTTTT','TOOOOOOT','TOGZZOOT','..DZZD.T','..D..D.T','T.*..*.T','TF....FT','TTT..TTT'],exits:{},fight:'boss',
-  story:'Une lumière dorée flotte au-dessus de la mare. Ce n’est pas un Lumignon. La mare remue.'}
+  story:'La forêt s’ouvre enfin sur une clairière ronde, presque parfaite. Au centre, une mare immobile, aussi lisse qu’un miroir. Et au-dessus de l’eau flotte la lueur dorée, celle que toute la ville regardait depuis Lugdon. Elle est chaude, belle, elle donne envie de s’approcher. Mais les fleurs, ici, sont fanées. Les arbres autour de la mare sont gris, comme vidés de leur couleur. Et la surface de l’eau vient de bouger.'}
 };
 const ENTRY={O:[[0,3],[0,4]],E:[[7,3],[7,4]],N:[[3,0],[4,0]],S:[[3,7],[4,7]]};
 const OPP={E:'O',O:'E',N:'S',S:'N'};
@@ -571,7 +571,7 @@ function drawActive(){
   const pts=searchPoints(h.id);const all=searchPoints();a+=btn('Fouiller',pts.length?'test d’Instinct'+(h.race==='humain'?' +1':'')+' · une seule tentative':(all.length?'déjà tenté ici':'aucun point de fouille'),'search',!pts.length);
   if(h.fam==='gecko'){const gp=searchPoints('g'+h.id);a+=btn('Mission : Gecko','fouille à distance · sa propre tentative','gecko',!gp.length);}
   if(h.fam==='hibou')Object.keys(tile().exits).forEach((dd)=>{if(tile().hidden&&!G.altar)return;a+=btn('Hibou : vigie '+DIRN[dd],'ce qui attend là-bas','peek:'+dd,false);});
-  if(tile().g.some((r)=>r.includes('A'))&&!(G.tile==='t4'&&G.altar)&&!(G.tile==='t1'&&G.altarT1))a+=btn('Interagir avec '+(G.tile==='t1'?'la borne':'l’autel'),'','altar',false);
+  if(tile().g.some((r)=>r.includes('A'))&&!(G.tile==='t4'&&G.altar)&&!(G.tile==='t1'&&G.altarT1))a+=btn('Interagir avec la borne',G.tile==='t4'?'près de la porte scellée':'la dernière borne de Lugdon','altar',false);
   if(G.tile==='t6'&&G.flowers<4)a+=btn('Cueillir une fleur-lanterne',`+2 charges (${4-G.flowers} restantes)`,'flower',false);
   if(h.cls==='tisseur')a+=btn('Lien de vie (1💎)','soigne d6 un allié','heal',h.e<1);
   h.bag.forEach((it)=>{a+=btn('Utiliser : '+ITEMS[it],'',('item:'+it),false);});}
@@ -579,7 +579,7 @@ function drawActive(){
 function groupActions(){const T=tile();let a='';
  const ex=Object.keys(T.exits).filter((dd)=>!(T.hidden&&!G.altar));
  ex.forEach((dd)=>{const to=TILES[T.exits[dd]];const cost=1+((to.brume||T.brume)?1:0);a+=btn(`Partir vers le ${DIRN[dd]}`,`−${cost} charge${cost>1?'s':''}`,'go:'+dd,false,'main');});
- if(T.hidden&&!G.altar)a+=`<p class="hint">Les sorties de ces ruines sont cachées. Interagissez avec l’autel (!).</p>`;
+ if(T.hidden&&!G.altar)a+=`<p class="hint">La brume cache les sorties. Interagissez avec la borne (!).</p>`;
  a+=btn('Se reposer un tour','−1 charge · +1 Éclat et +3 PV chacun (seul moyen de récupérer en exploration)','rest');
  if(G.peek)a+=`<p class="hint">${esc(G.peek)}</p>`;
  return `<h3 style="margin-top:12px">Le groupe</h3><div class="acts">${a}</div>`;}
@@ -649,7 +649,7 @@ function aiExploreStep(){
  for(const h of hs){
   if(searchPoints(h.id).length){doSearch(h,false);return;}
   if(h.fam==='gecko'&&searchPoints('g'+h.id).length){doSearch(h,true);return;}
-  if(T.g.some((r)=>r.includes('A'))&&((G.tile==='t4'&&!G.altar)||(G.tile==='t1'&&!G.altarT1))){G.sel=h.id;const b={dataset:{act:'altar'}};h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois.','story');}else{G.altar=true;log('L’autel s’éveille : deux chemins apparaissent, au nord et à l’est.','story');}render();return;}
+  if(T.g.some((r)=>r.includes('A'))&&((G.tile==='t4'&&!G.altar)||(G.tile==='t1'&&!G.altarT1))){G.sel=h.id;const b={dataset:{act:'altar'}};h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois.','story');}else{G.altar=true;log('Les signes de la borne s’embrasent : la brume recule et révèle deux chemins, au nord et à l’est. La porte reste scellée.','story');}render();return;}
   if(G.tile==='t6'&&G.flowers<4){h.free=false;G.flowers++;G.charge+=2;log(`${h.name} cueille une fleur-lanterne : +2 charges.`,'good');render();return;}
   if(h.cls==='tisseur'&&h.e>=1){const t=hs.filter((u)=>u.pv<=0.7*u.pv0).sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];if(t){h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}}
   if(h.pv<=0.5*h.pv0&&h.bag.includes('seve')){useItem(h,'seve');return;}
@@ -811,8 +811,8 @@ $('active').addEventListener('click',(ev)=>{const b=ev.target.closest('button[da
  if(act.startsWith('peek:')){const dd=act.slice(5);const to=TILES[tile().exits[dd]];h.free=false;
   const what={ruines:'des chenilles et une Phalène',saulaie:'une brume épaisse et un battement d’ailes',champi:'des champignons qui crachent… et des fleurs qui brillent',boss:'une lumière dorée immobile au-dessus d’une mare'}[to.fight]||'rien de vivant';
   G.peek=`Le Hibou survole le ${DIRN[dd]} : ${to.name}, ${what}.`;log(G.peek,'story');render();return;}
- if(act==='altar'){h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois : « Explorateurs, le Lumignon est votre souffle. Ne la laissez pas mourir. »','story');}
-  else{G.altar=true;log('L’autel s’éveille : deux chemins apparaissent. Au nord, une saulaie noyée de brume (plus court). À l’est, une champignonnière où brillent des fleurs (plus long, plus dangereux, plus riche).','story');}render();return;}
+ if(act==='altar'){h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La dernière borne de Lugdon s’allume : « Explorateurs, le Lumignon est votre souffle. Ne le laissez pas mourir. »','story');}
+  else{G.altar=true;log('Les signes de la borne s’embrasent au contact du Lumignon. La brume recule et révèle deux chemins : au nord, une saulaie noyée de brume (plus court) ; à l’est, une lueur de fleurs dans une champignonnière (plus long, plus dangereux, plus riche). La porte de pierre, elle, reste scellée.','story');}render();return;}
  if(act==='flower'){h.free=false;G.flowers++;G.charge+=2;log(`${h.name} cueille une fleur-lanterne : +2 charges.`,'good');render();return;}
  if(act==='heal'){const t=alive('h').slice().sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}
  if(act.startsWith('go:')){advance(act.slice(3));return;}
