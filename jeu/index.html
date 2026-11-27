@@ -116,8 +116,8 @@ const TILES={
  t4:{name:'Ruines envahies',role:'Combat · embranchement',g:['MMM..MMM','M..S...M','M.MM.M.M','...A.S..','........','M.M..MMM','M.S...PM','MMMMMMMM'],exits:{N:'t5',E:'t6'},hidden:true,fight:'ruines',
   story:'Des murs couverts de lierre. Au centre, un autel éteint. Des chenilles luisantes sortent des fissures !'},
  t5:{name:'Saulaie brumeuse',role:'Raccourci · brume épaisse',g:['TTTTTTTT','TD..S.DT','T.T.DT.T','T.D.P...','TF..D...','T.T.DT.T','TD....DT','TTT..TTT'],exits:{E:'t7'},brume:true,fight:'saulaie',
-  secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'La brume est si épaisse que la lanterne peine. Des racines partout, et un battement d’ailes au-dessus.'},
- t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T.V.K..T','..L..V.T','...K..LT','T.V..K.T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
+  secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'La brume est si épaisse que la lanterne peine. Des racines partout, et des battements d’ailes au-dessus.'},
+ t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T.V.K..T','..L..V.T','...K..LT','T......T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
   story:'Des champignons géants, des spores dorées… et des fleurs qui brillent comme de petites lanternes.'},
  t7:{name:'Clairière du Lumivore',role:'Boss',g:['TTTTTTTT','TOOOOOOT','TOGZZOOT','..DZZD.T','..D..D.T','T.*..*.T','TF....FT','TTT..TTT'],exits:{},fight:'boss',
   story:'Une lumière dorée flotte au-dessus de la mare. Ce n’est pas une lanterne. La mare remue.'}
@@ -165,6 +165,8 @@ const CRE={chenille:{n:'Chenille de lueur',att:9,def:0,pv:3,dmg:4,mv:3,xp:1,c:'#
  cracheur:{n:'Cracheur de spores',att:11,def:2,pv:5,dmg:4,mv:0,xp:3,rng:3,c:'#5f9a8c'},vesse:{n:'Vesse-de-loup',att:0,def:0,pv:4,dmg:6,mv:0,xp:2,c:'#e09a5a'},
  blaireau:{n:'Blaireau des souches',att:13,def:3,pv:13,dmg:8,mv:4,xp:6,c:'#6b5a46'},lumivore:{n:'Lumivore',att:12,def:3,pv:23,dmg:6,mv:0,xp:15,boss:1,c:'#2c5a46'},
  leurre:{n:'Leurre',att:0,def:5,pv:6,dmg:0,mv:0,xp:3,fixed:1,c:'#ffd35c'}};
+// PV des créatures selon le nombre de héros (2, 3, 4, 5) : table du bestiaire, issue des simulations
+const PVT={chenille:[3,3,5,7],phalene:[4,5,9,11],cracheur:[4,5,9,11],vesse:[3,4,7,9],blaireau:[11,14,22,29],lumivore:[20,31,55,78]};
 const DECK0=['seve','seve','seve','seve','seve','cristal','cristal','cristal','cristal','eclat','eclat','eclat','eclat','bulle','bulle','talisman','bottes','pierre','bourse','curio','curio','curio','curio'];
 const ITEMS={soin:'Potion de soin (+6 PV)',souffle:'Potion de second souffle (tous les Éclats)',seve:'Sève de lune (d6 PV)',cristal:'Cristal de lumière (+2 charges)',eclat:'Éclat brut (+2 Éclats)',bulle:'Bulle d’air (Souffle)',curio:'Curiosité du Voile',
  talisman:'Talisman d’écorce (+1 Défense)',bottes:'Bottes de mousse (+1 case)',pierre:'Pierre-focus (+1 Maîtrise)',bourse:'Bourse à éclats (+1 Éclat de réserve)'};
@@ -216,7 +218,7 @@ function roll(score,label){const r=d(20);const ok=r===1||(r!==20&&r<=score);log(
 /* ================= Mise en place ================= */
 function newGame(cfg){
  const n=cfg.length;
- G={tile:'t1',from:null,mode:'explore',round:0,charge:30,log:[],units:[],order:[],turn:0,acts:0,sel:null,pending:null,deck:shuffle(DECK0.slice()),searched:{},flowers:0,
+ G={tile:'t1',from:null,mode:'explore',round:0,charge:(TUNE.start??32),log:[],units:[],order:[],turn:0,acts:0,sel:null,pending:null,deck:shuffle(DECK0.slice()),searched:{},flowers:0,
   armor:{},force:{},illum:{},traps:[],blocks:[],dark:0,phase2:false,diving:false,visited:{},carnet:[],xp:{},altar:false,over:null,chest:false,peek:null,uid:1,stats:{tiles:[],fights:[],kills:{},items:[],secrets:0}};
  cfg.forEach((h,i)=>{const C=CLASSES[h.cls];const duo=n===2;
   const u={id:'h'+i,side:'h',name:h.name||('Héros '+(i+1)),race:h.race,cls:h.cls,fam:h.fam,pv0:C.pv+(duo?3:0),def:C.def,mai:C.mai,e0:C.ecl,inst:C.inst,
@@ -233,8 +235,9 @@ function placeHeroes(side){
   const ch=cell(x,y);if(ch==='#'||solid(ch)||'OZ'.includes(ch))continue;if(!unitAt(x,y))spots.push([x,y]);
   for(const[dx,dy]of[[1,0],[0,1],[0,-1],[-1,0]])q.push([x+dx,y+dy]);}
  hs.forEach((h,i)=>{if(spots[i]){h.x=spots[i][0];h.y=spots[i][1];}});}
-function spawn(kind,x,y){const n=heroes().length;const C=CRE[kind];const f=C.boss?0.5:0.25;
- const pv=C.fixed?C.pv:Math.round(C.pv*(TUNE.pvMul||1)*(1+f*(n-2))+1e-9);
+function spawn(kind,x,y){const n=heroes().length;const C=CRE[kind];const f=C.boss?(TUNE.fb??0.6):(TUNE.fc??0.25);
+ const useF=TUNE.fc!=null||TUNE.fb!=null||TUNE.sz||TUNE.pvMul;
+ const pv=C.fixed?C.pv:(useF?Math.round(C.pv*(TUNE.pvMul||1)*((TUNE.sz&&TUNE.sz[n])||1)*(1+f*(n-2))+1e-9):PVT[kind][Math.min(5,Math.max(2,n))-2]);
  const u={id:'c'+(G.uid++),side:'c',kind,name:C.name||C.n,pv,pv0:pv,def:C.def,att:C.att+(C.att?(TUNE.att||0):0),dmg:C.dmg,mv:C.mv,fly:!!C.fly,big:!!C.boss,x,y,sleep:0,stuck:0,slow:0,lured:null,blind:0};
  u.name=C.n;G.units.push(u);return u;}
 function freeCells(pred){const out=[];for(let y=0;y<8;y++)for(let x=0;x<8;x++){const ch=cell(x,y);if(solid(ch)||'OZ'.includes(ch))continue;if(unitAt(x,y))continue;if(pred&&!pred(x,y,ch))continue;out.push([x,y]);}return out;}
@@ -254,9 +257,10 @@ function enterTile(id,side){
  if(T.fight==='ruines'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));
   const pos=S.concat(far(6));const used=new Set();const pick=()=>{for(const p of pos){const k=key(p[0],p[1]);if(!used.has(k)&&!unitAt(p[0],p[1])){used.add(k);return p;}}return far(1)[0];};
   for(let i=0;i<5;i++){const p=pick();spawn('chenille',p[0],p[1]);}const p=pick();spawn('phalene',p[0],p[1]);}
- if(T.fight==='saulaie'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));spawn('phalene',S[0][0],S[0][1]);}
- if(T.fight==='champi'){T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='K')spawn('cracheur',x,y);if(c==='V')spawn('vesse',x,y);}));
-  if(Math.random()<0.5){const p=far(1)[0];spawn('blaireau',p[0],p[1]);log('Le sol se soulève : le Blaireau des souches surgit !','bad');}}
+ if(T.fight==='saulaie'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));spawn('phalene',S[0][0],S[0][1]);
+  for(let i=1;i<(TUNE.sauleP??2);i++){const p=far(1)[0];if(p)spawn('phalene',p[0],p[1]);}for(let i=0;i<(TUNE.sauleC??0);i++){const p=far(1)[0];if(p)spawn('chenille',p[0],p[1]);}}
+ if(T.fight==='champi'){let nk=0,nv=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='K'&&nk++<(TUNE.champK??4))spawn('cracheur',x,y);if(c==='V'&&nv++<(TUNE.champV??3))spawn('vesse',x,y);}));
+  if(Math.random()<(TUNE.blairP??0.5)){const p=far(1)[0];spawn('blaireau',p[0],p[1]);log('Le sol se soulève : le Blaireau des souches surgit !','bad');}}
  if(T.fight==='boss'){let zx=9,zy=9,gx=0,gy=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='Z'&&zx===9){zx=x;zy=y;}if(c==='G'){gx=x;gy=y;}}));
   spawn('lumivore',zx,zy);spawn('leurre',gx,gy);G.phase2=false;G.diving=false;G.dark=0;}
  if(alive('c').length)startCombat();else{G.mode='explore';heroes().forEach((h)=>{h.free=true;});}}
@@ -308,8 +312,8 @@ function checkEnd(){
   endCombat();return true;}
  return false;}
 function endCombat(){const F=G.stats.fights[G.stats.fights.length-1];if(F){F.rounds=G.round;F.down=heroes().filter((h)=>h.down).length;}G.mode='explore';G.pending=null;G.dark=0;
- alive('h').forEach((h)=>{const g=Math.ceil(h.pv0/2);h.pv=Math.min(h.pv0,h.pv+g);h.free=true;h.malus=0;h.light=0;});
- log('Le combat est fini. Chaque héros debout reprend son souffle : +½ de ses PV.','good');
+ alive('h').forEach((h)=>{h.free=true;h.malus=0;h.light=0;});
+ log('Le combat est fini. Pour soigner ses blessures, le groupe devra se reposer (et dépenser de la lumière).','good');
  if(G.tile==='t6'&&!G.chest){G.chest=true;gainItem(drawEquip(),alive('h')[0],'Sous un champignon, un coffre contient');}
  G.sel=alive('h')[0].id;}
 function spend(h,c){h.e-=c;G.acts--;}
@@ -436,7 +440,7 @@ function advance(dir){
  alive('h').forEach((h)=>{h.free=true;});
  log(`Le groupe part vers le ${DIRN[dir]} (−${cost} charge${cost>1?'s':''}).`,'');
  if(checkEnd())return render();enterTile(to,OPP[dir]);if(!checkEnd())render();else render();}
-function rest(){G.charge--;alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.free=true;});log('Le groupe se repose un tour : +1 Éclat chacun, −1 charge.','');checkEnd();render();}
+function rest(){G.charge--;const pv=TUNE.restPV??3;alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.pv=Math.min(h.pv0,h.pv+pv);h.free=true;});log(`Le groupe se repose un tour : +1 Éclat et +${pv} PV chacun, −1 charge.`,'');checkEnd();render();}
 
 /* ================= Interaction plateau ================= */
 function setPending(p){G.pending=p;render();}
@@ -463,7 +467,7 @@ function clickCell(x,y){
 /* ================= Rendu ================= */
 function render(){
  if(!G||SIM.silent)return;
- $('lfill').style.width=Math.max(0,Math.min(100,G.charge/30*100))+'%';$('lnum').textContent=Math.max(0,G.charge);
+ $('lfill').style.width=Math.max(0,Math.min(100,G.charge/(TUNE.start??32)*100))+'%';$('lnum').textContent=Math.max(0,G.charge);
  $('mode').textContent=G.mode==='combat'?`Combat · round ${G.round}`:'Exploration';
  const T=tile();$('tilename').textContent=T.name;$('tilerole').textContent=T.role+(T.brume?' · −1 charge':'');
  drawBoard();drawActive();drawRoster();drawFoes();
@@ -546,7 +550,7 @@ function groupActions(){const T=tile();let a='';
  const ex=Object.keys(T.exits).filter((dd)=>!(T.hidden&&!G.altar));
  ex.forEach((dd)=>{const to=TILES[T.exits[dd]];const cost=1+((to.brume||T.brume)?1:0);a+=btn(`Partir vers le ${DIRN[dd]}`,`−${cost} charge${cost>1?'s':''}`,'go:'+dd,false,'main');});
  if(T.hidden&&!G.altar)a+=`<p class="hint">Les sorties de ces ruines sont cachées. Interagissez avec l’autel (!).</p>`;
- a+=btn('Se reposer un tour','−1 charge · +1 Éclat chacun (seul moyen de regagner des Éclats en exploration)','rest');
+ a+=btn('Se reposer un tour','−1 charge · +1 Éclat et +3 PV chacun (seul moyen de récupérer en exploration)','rest');
  if(G.peek)a+=`<p class="hint">${esc(G.peek)}</p>`;
  return `<h3 style="margin-top:12px">Le groupe</h3><div class="acts">${a}</div>`;}
 function famTargets(h){const F=h.fam;
@@ -622,7 +626,8 @@ function aiExploreStep(){
   if(h.race==='humain'&&h.bag.includes('curio')){useItem(h,'curio');return;}}
  const ex=Object.keys(T.exits);if(!ex.length)return;
  const avgE=hs.reduce((a,h)=>a+h.e/h.e0,0)/hs.length;
- if(avgE<0.6&&G.charge>(G.tile==='t5'||G.tile==='t6'?14:20)&&(G.aiRest||0)<3){G.aiRest=(G.aiRest||0)+1;rest();return;}
+ const hurtG=hs.some((h)=>h.pv<=0.5*h.pv0)||hs.reduce((a,h)=>a+h.pv/h.pv0,0)/hs.length<0.7;const reserve=(G.tile==='t5'||G.tile==='t6')?(TUNE.resB??11):(TUNE.resA??15);
+ if((avgE<0.6||hurtG)&&G.charge>reserve&&(G.aiRest||0)<(TUNE.restCap??4)){G.aiRest=(G.aiRest||0)+1;rest();return;}
  let dir=ex[0];if(ex.length>1){const ok=SIM.forceRoute?SIM.forceRoute==='detour':(hs.length>=4&&hs.every((h)=>h.pv>=0.6*h.pv0)&&G.charge>=18);dir=ok?'E':'N';log(ok?'Le groupe se sent fort : il prend le détour par la champignonnière.':'Le groupe préfère le raccourci par la saulaie.','story');}
  G.aiRest=0;advance(dir);}
 function aiStep(){if(!G||G.over)return false;
