@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission 1 jouable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE occasion : un jeu de plateau coopératif, nuit de forêt et lanterne
+   IDEA la table de jeu : plateau de tuiles au centre, fiche du héros actif à côté, carnet de bord en dessous
+   PICTURE la tuile 8x8 dessinée case par case avec figurines, cases jouables surlignées en or
+   COLOUR nuit vert profond, mousse, or de lanterne pour l'action, rouge braise pour les créatures
+   TYPE Fraunces pour les titres, Nunito Sans pour le jeu
+   LAYOUT laptop : plateau à gauche, fiche et actions à droite ; téléphone : barre de lanterne, plateau, actions, journal */
+:root{color-scheme:dark;--bg:#0f1c16;--panel:#162a21;--panel2:#1d362b;--line:#2c4a3c;--ink:#eaf3ec;--muted:#a9c2b3;--gold:#f2c14b;--gold2:#ffd97a;--red:#e2675b;--blue:#7fb8d6;--ok:#8fd694}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Nunito Sans",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em;margin:0}
+button,select,input{font:inherit;color:inherit}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px max(16px,3vw);border-bottom:1px solid var(--line);background:#0c1712}
+.top h1{font-size:22px}
+.lantern{display:flex;align-items:center;gap:10px;flex:1 1 260px}
+.lbar{flex:1;height:14px;border-radius:99px;background:#24392f;overflow:hidden;border:1px solid var(--line)}
+.lbar>div{height:100%;background:linear-gradient(90deg,#c98b1c,var(--gold2));transition:width .3s}
+.lnum{font-weight:800;color:var(--gold);white-space:nowrap}
+.pill{border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:13px;color:var(--muted);white-space:nowrap}
+.main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding:16px max(16px,3vw);align-items:start}
+@media(max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+.boardwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px}
+.boardhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 4px 8px}
+.boardhead h2{font-size:20px}
+#board{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.card h3{font-size:17px;margin-bottom:6px}
+.hint{color:var(--muted);font-size:13px;margin:4px 0 0}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.stat{background:var(--panel2);border-radius:8px;padding:2px 8px;font-size:13px;white-space:nowrap}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;cursor:pointer;min-height:38px;text-align:left}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.on{border-color:var(--gold);background:#3a3417}
+.btn.main{background:var(--gold);color:#1d1606;border-color:var(--gold);font-weight:800}
+.btn small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.btn.main small{color:#3d300e}
+.roster{display:grid;gap:6px}
+.hero{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.hero.cur{border-color:var(--gold);background:#24321f}
+.hero.down{opacity:.45}
+.dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;color:#10170f}
+.mini{font-size:12px;color:var(--muted)}
+.hp{height:6px;border-radius:9px;background:#3a2a28;overflow:hidden;margin-top:3px}
+.hp>div{height:100%;background:var(--ok)}
+.log{max-height:260px;overflow:auto;font-size:13px;display:flex;flex-direction:column-reverse}
+.log p{margin:0;padding:3px 0;border-bottom:1px dashed #23392e}
+.log .r{color:var(--gold2)}
+.log .bad{color:var(--red)}
+.log .good{color:var(--ok)}
+.log .story{color:#cfe3d6;font-style:italic}
+.overlay{position:fixed;inset:0;background:rgba(5,10,8,.82);display:grid;place-items:center;padding:16px;z-index:5;overflow:auto}
+.dialog{background:var(--panel);border:1px solid var(--gold);border-radius:16px;padding:18px;max-width:760px;width:100%}
+.dialog h2{font-size:26px;margin-bottom:6px}
+.setup{display:grid;gap:8px;margin:12px 0}
+.srow{display:grid;grid-template-columns:minmax(0,1.1fr) repeat(3,minmax(0,1fr));gap:6px}
+@media(max-width:560px){.srow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+select,input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:16px;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin:8px 4px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.tip{font-size:13px;color:var(--gold2);min-height:20px;margin:6px 4px 0}
+@media(prefers-reduced-motion:reduce){.lbar>div{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+<h1>Mission 1 · La Lisière</h1>
+<div class="lantern"><span title="Charges de la grande lanterne">🏮</span><div class="lbar"><div id="lfill"></div></div><span class="lnum" id="lnum">30</span></div>
+<span class="pill" id="mode">Exploration</span>
+<button class="btn" id="newgame" type="button">Nouvelle partie</button>
+</header>
+<div class="main">
+<section class="boardwrap">
+<div class="boardhead"><h2 id="tilename">—</h2><span class="pill" id="tilerole">—</span></div>
+<svg id="board" viewBox="0 0 500 500" role="img" aria-label="Plateau de la tuile en cours"></svg>
+<p class="tip" id="tip"></p>
+<div class="legend" id="legend"></div>
+</section>
+<aside class="side">
+<div class="card" id="active"></div>
+<div class="card"><h3>Le groupe</h3><div class="roster" id="roster"></div></div>
+<div class="card" id="foes"></div>
+<div class="card"><h3>Journal</h3><div class="log" id="log"></div></div>
+</aside>
+</div>
+<div class="overlay" id="overlay" hidden><div class="dialog" id="dialog"></div></div>
+<script>
+{
+/* ================= Données ================= */
+const TILES={
+ t1:{name:'Lisière du Voile',role:'Départ',g:['TTTTTTTT','T..F...T','T.P...FT','HHA.....','HH......','T...F..T','TF....TT','TTTTTTTT'],exits:{E:'t2'},
+  story:'La route lanternée s’arrête ici. Devant vous, la brume avale les arbres. La grande lanterne s’élève et vous suit.',clue:'Une inscription griffée par d’anciens Passeurs : « Ne suivez pas la lumière qui attend. »'},
+ t2:{name:'Sous-bois aux fougères',role:'Exploration',g:['TTTTTTTT','T.FFP.FT','T.TTT..T','......F.','.F......','T..TTT.T','TF....FT','TTTTTTTT'],exits:{E:'t3'},event:'chenilles',
+  story:'Deux troncs couchés forment des couloirs de fougères. Quelque chose bruisse sous les feuilles.'},
+ t3:{name:'Gué du ruisseau',role:'Exploration',g:['TTTOOTTT','T..OO..T','T.ROO.PT','...WW...','...WW...','T..OO.RT','TF.OO..T','TTTOOTTT'],exits:{E:'t4'},
+  secret:{nom:'la Grotte sous le gué',niveau:3,danger:'☠☠'},story:'Un ruisseau noir coupe la forêt. Seul un gué de pierres plates permet de passer.'},
+ t4:{name:'Ruines envahies',role:'Combat · embranchement',g:['MMM..MMM','M..S...M','M.MM.M.M','...A.S..','........','M.M..MMM','M.S...PM','MMMMMMMM'],exits:{N:'t5',E:'t6'},hidden:true,fight:'ruines',
+  story:'Des murs couverts de lierre. Au centre, un autel éteint. Des chenilles luisantes sortent des fissures !'},
+ t5:{name:'Saulaie brumeuse',role:'Raccourci · brume épaisse',g:['TTTTTTTT','TD..S.DT','T.T.DT.T','T.D.P...','TF..D...','T.T.DT.T','TD....DT','TTT..TTT'],exits:{E:'t7'},brume:true,fight:'saulaie',
+  secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'La brume est si épaisse que la lanterne peine. Des racines partout, et un battement d’ailes au-dessus.'},
+ t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T.V.K..T','..L..V.T','...K..LT','T.V..K.T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
+  story:'Des champignons géants, des spores dorées… et des fleurs qui brillent comme de petites lanternes.'},
+ t7:{name:'Clairière du Lumivore',role:'Boss',g:['TTTTTTTT','TOOOOOOT','TOGZZOOT','..DZZD.T','..D..D.T','T.*..*.T','TF....FT','TTT..TTT'],exits:{},fight:'boss',
+  story:'Une lumière dorée flotte au-dessus de la mare. Ce n’est pas une lanterne. La mare remue.'}
+};
+const ENTRY={O:[[0,3],[0,4]],E:[[7,3],[7,4]],N:[[3,0],[4,0]],S:[[3,7],[4,7]]};
+const OPP={E:'O',O:'E',N:'S',S:'N'};
+const DIRN={E:'est',O:'ouest',N:'nord',S:'sud'};
+const COL={'.':'#a9c98a',T:'#2f5b3a',R:'#8d8a80',M:'#9b8f7a',F:'#6fa25a',D:'#8a6a45',W:'#7fb8d6',O:'#3f7fa8',P:'#c9a24a',A:'#d9b35a',L:'#f2c14b',S:'#a9c98a',K:'#a9c98a',V:'#a9c98a',H:'#d8d1bc',Z:'#355446',G:'#a9c98a','*':'#c8d7e8'};
+const CLASSES={
+ rempart:{n:'Rempart',pv:12,def:3,mai:10,ecl:4,inst:9,c:'#9fb7d9',sp:['bouclier','armure','riposte']},
+ tisseur:{n:'Tisseur',pv:9,def:1,mai:11,ecl:6,inst:11,c:'#f2d07a',sp:['lienvie','lienforce','lienleger']},
+ lamesort:{n:'Lamesort',pv:10,def:2,mai:12,ecl:5,inst:9,c:'#f08a6c',sp:['lame','marteau','lance']},
+ pisteur:{n:'Pisteur',pv:9,def:1,mai:12,ecl:5,inst:11,c:'#9ed38a',sp:['arc','cible','piege']},
+ elementaliste:{n:'Élémentaliste',pv:7,def:0,mai:12,ecl:7,inst:10,c:'#e59ad6',sp:['etincelle','flocon','decharge','gravillons']},
+ passeombre:{n:'Passe-Ombre',pv:9,def:2,mai:11,ecl:5,inst:11,c:'#b59cf0',sp:['lameombre','pasombre','echange']}};
+const RACES={humain:{n:'Humain',t:'+1 en fouille ; étudie les Curiosités'},marque:{n:'Marqué',t:'Atout du familier 2 fois par combat'},saurien:{n:'Saurien',t:'Apnée : 5 de Souffle'},
+ oiseau:{n:'Peuple-oiseau',t:'Déplacement 4, racines et eau peu profonde à 1'},loutre:{n:'Loutre',t:'Nage : eau à 1, eau profonde à 2'},astreen:{n:'Astréen',t:'Voit les secrets du Voile'}};
+const FAMS={gecko:{n:'Gecko',m:'Passe-muraille : fouille un point de fouille à distance (exploration)',a:'Éclat aveuglant : créatures à 2 cases −3 à l’attaque ce round'},
+ hibou:{n:'Hibou',m:'Vigie : regarde ce qui attend derrière une sortie (exploration)',a:'Piqué : +2 à la prochaine attaque'},
+ lynx:{n:'Lynx',m:'Bond : d4 à une créature à 4 cases, elle attaque le Lynx à son tour',a:'Insaisissable : −2 pour être touché jusqu’au prochain tour'},
+ chacal:{n:'Chacal',m:'Chasseur : mord une créature à 4 cases (d4)',a:'Morsure : +d4 à la prochaine attaque réussie'},
+ tatou:{n:'Tatou',m:'Gardien : bloque une case à 4 cases jusqu’à la fin du round',a:'Carapace : aucun dégât ce round, mais ne bouge plus'},
+ panda:{n:'Panda',m:'Berceuse : endort une créature à 4 cases 1 round (pas le boss)',a:'Rêve partagé : lui et un allié à 2 cases regagnent 1 Éclat'}};
+const SP={
+ bouclier:{n:'Coup de bouclier',c:1,r:1,t:'foe',d:6,txt:'corps à corps, d6'},
+ armure:{n:'Armure de force',c:1,r:1,t:'allyself',txt:'+2 Défense tout le combat (une seule active)'},
+ riposte:{n:'Riposte',c:1,r:0,t:'self',txt:'jusqu’à ton prochain tour, tout attaquant au contact subit d4'},
+ lienvie:{n:'Lien de vie',c:1,r:4,t:'any',d:6,txt:'soigne d6 un allié ou inflige d6 à une créature'},
+ lienforce:{n:'Lien de force',c:1,r:4,t:'ally',txt:'+2 aux attaques d’un allié tout le combat (un seul)'},
+ lienleger:{n:'Lien léger',c:1,r:4,t:'allyself',txt:'+1 case par déplacement jusqu’à la fin du round suivant'},
+ lame:{n:'Lame',c:1,r:1,t:'foe',d:8,txt:'corps à corps, d8'},
+ marteau:{n:'Marteau',c:1,r:1,t:'foe',d:6,txt:'d6, repousse de 2 cases, la cible ne bougera pas'},
+ lance:{n:'Lance',c:1,r:2,t:'line',d:6,txt:'d6 aux créatures alignées sur 2 cases'},
+ arc:{n:'Arc de lumière',c:1,r:6,t:'foe',d:8,txt:'distance 6, d8'},
+ cible:{n:'Cible illuminée',c:1,r:6,t:'foeauto',txt:'+2 pour toucher la cible pour tous, jusqu’à sa chute'},
+ piege:{n:'Piège runique',c:1,r:3,t:'cell',txt:'la 1re créature qui entre subit d8 et ne bouge plus 1 round'},
+ etincelle:{n:'Étincelle',c:1,r:6,t:'foe',d:6,txt:'distance 6, d6'},
+ flocon:{n:'Flocon',c:1,r:5,t:'foe',d:4,txt:'d4 et −1 déplacement au prochain tour'},
+ decharge:{n:'Décharge',c:1,r:5,t:'foe',d:4,txt:'d4, puis d4 à une 2e créature à 2 cases'},
+ gravillons:{n:'Gravillons',c:1,r:5,t:'area',d:4,txt:'zone 2 × 2 : d4 à chaque créature touchée'},
+ lameombre:{n:'Lame d’ombre',c:1,r:2,t:'foe',d:6,txt:'portée 2, d6'},
+ pasombre:{n:'Pas d’ombre',c:1,r:4,t:'tele',txt:'téléportation à 4 cases, à travers tout'},
+ echange:{n:'Échange d’ombres',c:1,r:4,t:'swap',txt:'échange ta place avec un allié ou une créature'}};
+const CRE={chenille:{n:'Chenille de lueur',att:8,def:0,pv:2,dmg:4,mv:3,xp:1,c:'#e8e2ff'},phalene:{n:'Phalène mange-lumière',att:11,def:1,pv:4,dmg:4,mv:5,xp:4,fly:1,c:'#8ea0c8'},
+ cracheur:{n:'Cracheur de spores',att:10,def:2,pv:4,dmg:4,mv:0,xp:3,rng:3,c:'#5f9a8c'},vesse:{n:'Vesse-de-loup',att:0,def:0,pv:3,dmg:6,mv:0,xp:2,c:'#e09a5a'},
+ blaireau:{n:'Blaireau des souches',att:12,def:3,pv:10,dmg:8,mv:4,xp:6,c:'#6b5a46'},lumivore:{n:'Lumivore',att:11,def:3,pv:18,dmg:6,mv:0,xp:15,boss:1,c:'#2c5a46'},
+ leurre:{n:'Leurre',att:0,def:5,pv:6,dmg:0,mv:0,xp:3,fixed:1,c:'#ffd35c'}};
+const DECK0=['seve','seve','seve','seve','seve','cristal','cristal','cristal','cristal','eclat','eclat','eclat','eclat','bulle','bulle','talisman','bottes','pierre','bourse','curio','curio','curio','curio'];
+const ITEMS={soin:'Potion de soin (+6 PV)',souffle:'Potion de second souffle (tous les Éclats)',seve:'Sève de lune (d6 PV)',cristal:'Cristal de lumière (+2 charges)',eclat:'Éclat brut (+2 Éclats)',bulle:'Bulle d’air (Souffle)',curio:'Curiosité du Voile',
+ talisman:'Talisman d’écorce (+1 Défense)',bottes:'Bottes de mousse (+1 case)',pierre:'Pierre-focus (+1 Maîtrise)',bourse:'Bourse à éclats (+1 Éclat de réserve)'};
+const EQUIP=['talisman','bottes','pierre','bourse'];
+
+/* ================= Outils ================= */
+let G=null;
+const $=(id)=>document.getElementById(id);
+const esc=(s)=>String(s).replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const d=(n)=>1+Math.floor(Math.random()*n);
+const man=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+const key=(x,y)=>x+','+y;
+function log(t,cls){G.log.push({t,cls:cls||''});if(G.log.length>220)G.log.shift();}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const tile=()=>TILES[G.tile];
+const cell=(x,y)=>(x<0||y<0||x>7||y>7)?'#':tile().g[y][x];
+const heroes=()=>G.units.filter((u)=>u.side==='h');
+const alive=(s)=>G.units.filter((u)=>u.side===s&&!u.down&&u.pv>0);
+const byId=(id)=>G.units.find((u)=>u.id===id);
+function cellsOf(u){return u.big?[[u.x,u.y],[u.x+1,u.y],[u.x,u.y+1],[u.x+1,u.y+1]]:[[u.x,u.y]];}
+function unitAt(x,y){return G.units.find((u)=>!u.down&&u.pv>0&&cellsOf(u).some(([a,b])=>a===x&&b===y));}
+function dist(a,b){let m=99;for(const[ax,ay]of cellsOf(a))for(const[bx,by]of cellsOf(b))m=Math.min(m,Math.abs(ax-bx)+Math.abs(ay-by));return m;}
+function solid(ch){return 'TRM#'.includes(ch);}
+function stepCost(u,ch){
+ if(u.fly)return solid(ch)?99:1;
+ if(solid(ch)||ch==='Z')return 99;
+ if(ch==='O')return u.race==='loutre'?2:99;
+ if(ch==='W')return (u.race==='loutre'||u.race==='oiseau')?1:2;
+ if(ch==='D')return u.race==='oiseau'?1:2;
+ return 1;}
+function reach(u,mp){
+ const res=new Map();res.set(key(u.x,u.y),0);const q=[[u.x,u.y,0]];
+ while(q.length){q.sort((a,b)=>a[2]-b[2]);const[x,y,c]=q.shift();
+  for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;const ch=cell(nx,ny);if(ch==='#')continue;
+   const sc=stepCost(u,ch);if(sc>=99)continue;const nc=c+sc;if(nc>mp)continue;
+   const o=unitAt(nx,ny);if(o&&o.side!==u.side)continue;
+   if(u.side==='c'&&G.blocks.includes(key(nx,ny)))continue;
+   if(!res.has(key(nx,ny))||res.get(key(nx,ny))>nc){res.set(key(nx,ny),nc);q.push([nx,ny,nc]);}}}
+ for(const k of [...res.keys()]){const[x,y]=k.split(',').map(Number);const o=unitAt(x,y);if(o&&o!==u)res.delete(k);}
+ return res;}
+function bfsField(tx,ty,u){ // distance à pied depuis la cible (ignore les unités)
+ const f=new Map();f.set(key(tx,ty),0);const q=[[tx,ty]];
+ while(q.length){const[x,y]=q.shift();const c=f.get(key(x,y));
+  for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;const ch=cell(nx,ny);if(ch==='#')continue;if(stepCost(u,ch)>=99)continue;
+   if(!f.has(key(nx,ny))){f.set(key(nx,ny),c+1);q.push([nx,ny]);}}}
+ return f;}
+function roll(score,label){const r=d(20);const ok=r===1||(r!==20&&r<=score);log(`${label} : d20 = ${r} ${ok?'≤':'>'} ${score} → ${ok?'réussi':'raté'}`,'r');return ok;}
+
+/* ================= Mise en place ================= */
+function newGame(cfg){
+ const n=cfg.length;
+ G={tile:'t1',from:null,mode:'explore',round:0,charge:30,log:[],units:[],order:[],turn:0,acts:0,sel:null,pending:null,deck:shuffle(DECK0.slice()),searched:{},flowers:0,
+  armor:{},force:{},illum:{},traps:[],blocks:[],dark:0,phase2:false,diving:false,visited:{},carnet:[],xp:{},altar:false,over:null,chest:false,peek:null,uid:1};
+ cfg.forEach((h,i)=>{const C=CLASSES[h.cls];const duo=n===2;
+  const u={id:'h'+i,side:'h',name:h.name||('Héros '+(i+1)),race:h.race,cls:h.cls,fam:h.fam,pv0:C.pv+(duo?3:0),def:C.def,mai:C.mai,e0:C.ecl,inst:C.inst,
+   mv:h.race==='oiseau'?4:3,dmgb:duo?1:0,bag:['soin','souffle'],eq:[],x:0,y:0,down:false,free:true,atout:0,famRound:-1,famRest:-1,
+   riposte:false,light:0,dodge:false,immune:false,hitb:0,dmgx:false,malus:0,color:C.c};
+  u.pv=u.pv0;u.e=u.e0;G.units.push(u);G.xp[u.id]=0;});
+ G.sel='h0';
+ log('La mission commence : traverser la Lisière et trouver la source de la lumière qui dévore les lanternes.','story');
+ enterTile('t1',null);render();}
+function placeHeroes(side){
+ const starts=side?ENTRY[side]:[[0,3],[0,4],[1,3],[1,4]];const hs=heroes().filter((h)=>!h.down);
+ const seen=new Set();const q=starts.map((p)=>p.slice());const spots=[];
+ while(q.length&&spots.length<hs.length){const[x,y]=q.shift();const k=key(x,y);if(seen.has(k))continue;seen.add(k);
+  const ch=cell(x,y);if(ch==='#'||solid(ch)||'OZ'.includes(ch))continue;if(!unitAt(x,y))spots.push([x,y]);
+  for(const[dx,dy]of[[1,0],[0,1],[0,-1],[-1,0]])q.push([x+dx,y+dy]);}
+ hs.forEach((h,i)=>{if(spots[i]){h.x=spots[i][0];h.y=spots[i][1];}});}
+function spawn(kind,x,y){const n=heroes().length;const C=CRE[kind];const f=C.boss?0.5:0.25;
+ const pv=C.fixed?C.pv:Math.round(C.pv*(1+f*(n-2))+1e-9);
+ const u={id:'c'+(G.uid++),side:'c',kind,name:C.name||C.n,pv,pv0:pv,def:C.def,att:C.att,dmg:C.dmg,mv:C.mv,fly:!!C.fly,big:!!C.boss,x,y,sleep:0,stuck:0,slow:0,lured:null,blind:0};
+ u.name=C.n;G.units.push(u);return u;}
+function freeCells(pred){const out=[];for(let y=0;y<8;y++)for(let x=0;x<8;x++){const ch=cell(x,y);if(solid(ch)||'OZ'.includes(ch))continue;if(unitAt(x,y))continue;if(pred&&!pred(x,y,ch))continue;out.push([x,y]);}return out;}
+function far(n){const hs=alive('h');return shuffle(freeCells((x,y)=>hs.every((h)=>Math.abs(h.x-x)+Math.abs(h.y-y)>=4))).slice(0,n);}
+function enterTile(id,side){
+ G.units=G.units.filter((u)=>u.side==='h');G.tile=id;G.from=side;G.blocks=[];G.traps=[];G.peek=null;
+ const T=TILES[id];placeHeroes(side);G.visited[id]=true;
+ log(`— ${T.name} —`,'');log(T.story,'story');
+ if(T.secret){const ast=alive('h').some((h)=>h.race==='astreen');
+  if(ast){log(`L’Astréen lit une constellation cachée : ${T.secret.nom} (passage secret, niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);}
+  else{const hs=alive('h');const f=hs.find((h)=>h.fam);log(`Le ${FAMS[f.fam].n} de ${f.name} flaire quelque chose… Chacun tente un test d’Instinct Difficile (−3).`,'story');
+   if(hs.some((h)=>roll(h.inst-3,'Instinct de '+h.name))){log(`Secret découvert : ${T.secret.nom} (niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);}
+   else log('Rien de plus… pour cette fois.','');}}
+ let foes=[];
+ if(T.event==='chenilles'&&Math.random()<0.5){log('Les fougères s’agitent : trois Chenilles de lueur !','bad');foes=far(3).map(([x,y])=>spawn('chenille',x,y));}
+ if(T.fight==='ruines'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));
+  const pos=S.concat(far(6));const used=new Set();const pick=()=>{for(const p of pos){const k=key(p[0],p[1]);if(!used.has(k)&&!unitAt(p[0],p[1])){used.add(k);return p;}}return far(1)[0];};
+  for(let i=0;i<5;i++){const p=pick();spawn('chenille',p[0],p[1]);}const p=pick();spawn('phalene',p[0],p[1]);}
+ if(T.fight==='saulaie'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));spawn('phalene',S[0][0],S[0][1]);}
+ if(T.fight==='champi'){T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='K')spawn('cracheur',x,y);if(c==='V')spawn('vesse',x,y);}));
+  if(Math.random()<0.5){const p=far(1)[0];spawn('blaireau',p[0],p[1]);log('Le sol se soulève : le Blaireau des souches surgit !','bad');}}
+ if(T.fight==='boss'){let zx=9,zy=9,gx=0,gy=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='Z'&&zx===9){zx=x;zy=y;}if(c==='G'){gx=x;gy=y;}}));
+  spawn('lumivore',zx,zy);spawn('leurre',gx,gy);G.phase2=false;G.diving=false;G.dark=0;}
+ if(alive('c').length)startCombat();else{G.mode='explore';heroes().forEach((h)=>{h.free=true;});}}
+
+/* ================= Combat ================= */
+function startCombat(){
+ G.mode='combat';G.round=1;G.armor={};G.force={};G.illum={};
+ const hs=alive('h');hs.forEach((h)=>{h.atout=0;h.famRest=-1;h.famRound=-1;h.ini=d(6);h.riposte=false;h.light=0;h.dodge=false;h.immune=false;h.hitb=0;h.dmgx=false;});
+ hs.sort((a,b)=>a.ini-b.ini||b.inst-a.inst||b.mai-a.mai||b.pv-a.pv);
+ G.order=hs.map((h)=>h.id);log('Combat ! Initiative au d6 : '+hs.map((h)=>`${h.name} ${h.ini}`).join(', ')+'.','bad');
+ G.turn=-1;nextHero();}
+function curHero(){return G.mode==='combat'?byId(G.order[G.turn]):byId(G.sel);}
+function nextHero(){
+ G.pending=null;
+ while(true){if(!alive('h').length){checkEnd();return;}G.turn++;
+  if(G.turn>=G.order.length){voilePhase();if(G.over||G.mode!=='combat')return;G.round++;G.turn=0;}
+  const h=byId(G.order[G.turn]);if(h&&!h.down){startHeroTurn(h);return;}}}
+function startHeroTurn(h){
+ G.sel=h.id;G.acts=2;h.e=Math.min(h.e0,h.e+1);h.riposte=false;h.dodge=false;h.moved=false;
+ if(h.immune){h.immune=false;}
+ log(`Tour de ${h.name} (${CLASSES[h.cls].n}) · ${h.e} Éclats.`,'');}
+function attackScore(h,t){let s=h.mai-h.malus-t.def;
+ if(Object.entries(G.force).some(([c,id])=>id===h.id&&byId(c)&&!byId(c).down))s+=2;
+ if(Object.values(G.illum).includes(t.id))s+=2;
+ if(h.hitb){s+=h.hitb;}
+ return s;}
+function hurt(t,n,src){
+ if(t.side==='h'){if(t.immune){log(`${t.name} est protégé par sa carapace : aucun dégât.`,'good');return;}
+  t.pv-=n;log(`${t.name} perd ${n} PV (${Math.max(0,t.pv)}/${t.pv0}).`,'bad');if(t.pv<=0){t.pv=0;t.down=true;log(`${t.name} est à terre !`,'bad');}return;}
+ t.pv-=n;log(`${t.name} perd ${n} PV (${Math.max(0,t.pv)}/${t.pv0}).`,'good');
+ if(t.pv<=0)kill(t,src);
+ else if(t.kind==='lumivore'&&!G.phase2&&t.pv<=t.pv0/2){G.phase2=true;G.diving=true;log('Le Lumivore plonge dans le mycélium ! La clairière s’assombrit, des champignons poussent.','bad');
+  G.dark=2;tile().g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='*'&&!unitAt(x,y))spawn('cracheur',x,y);}));}}
+function kill(t,src){t.pv=0;log(`${t.name} est vaincu.`,'good');
+ if(src&&src.side==='h')G.xp[src.id]+=CRE[t.kind].xp;
+ if(t.kind==='vesse'){log('La Vesse-de-loup explose !','bad');const dmg=d(6);G.units.filter((u)=>u!==t&&u.pv>0&&!u.down&&dist(u,t)===1).forEach((u)=>hurt(u,dmg,null));}
+ if(t.kind==='blaireau')gainItem(drawEquip(),src&&src.side==='h'?src:alive('h')[0],'Le Blaireau laisse');
+ if(t.kind==='leurre')log('Le leurre s’éteint : le Lumivore ne peut plus voler votre lumière.','good');
+ if(t.kind==='lumivore'){G.units.filter((u)=>u.side==='c').forEach((u)=>{u.pv=0;});gainItem(drawEquip(),alive('h')[0],'Le Lumivore laisse');gainItem(drawEquip(),alive('h')[1]||alive('h')[0],'Le Lumivore laisse');}
+ G.units=G.units.filter((u)=>u.side==='h'||u.pv>0);
+ Object.keys(G.illum).forEach((k)=>{if(G.illum[k]===t.id)delete G.illum[k];});
+ checkEnd();}
+function checkEnd(){
+ if(!alive('h').length){G.over='defaite';log('Tous les héros sont à terre. La mission échoue.','bad');return true;}
+ if(G.charge<=0){G.charge=0;G.over='defaite';log('La lanterne s’éteint. Les héros battent en retraite.','bad');return true;}
+ if(G.mode==='combat'&&!alive('c').length){
+  if(G.tile==='t7'){G.over='victoire';log('Le Lumivore est vaincu ! La lumière de la Lisière est sauvée.','good');return true;}
+  endCombat();return true;}
+ return false;}
+function endCombat(){G.mode='explore';G.pending=null;G.dark=0;
+ alive('h').forEach((h)=>{const g=Math.ceil(h.pv0/2);h.pv=Math.min(h.pv0,h.pv+g);h.free=true;h.malus=0;h.light=0;});
+ log('Le combat est fini. Chaque héros debout reprend son souffle : +½ de ses PV.','good');
+ if(G.tile==='t6'&&!G.chest){G.chest=true;gainItem(drawEquip(),alive('h')[0],'Sous un champignon, un coffre contient');}
+ G.sel=alive('h')[0].id;}
+function spend(h,c){h.e-=c;G.acts--;}
+function afterAction(){if(G.over)return render();if(G.mode!=='combat')return render();const h=curHero();if(!h||h.down||G.acts<=0)nextHero();render();}
+function heroAttack(h,t,die,label){
+ const s=attackScore(h,t);if(roll(s,`${label} de ${h.name} sur ${t.name}`)){
+  let dm=d(die)+h.dmgb;if(h.dmgx){dm+=d(4);h.dmgx=false;log('Morsure du Chacal : +d4.','');}
+  h.hitb=0;hurt(t,dm,h);return true;}h.hitb=0;return false;}
+function castSpell(h,sid,tgt){
+ const S=SP[sid];spend(h,S.c);
+ if(sid==='armure'){G.armor[h.id]=tgt.id;log(`${h.name} entoure ${tgt.name} d’une Armure de force (+2 Défense).`,'good');}
+ else if(sid==='riposte'){h.riposte=true;log(`${h.name} se met en Riposte.`,'good');}
+ else if(sid==='lienforce'){G.force[h.id]=tgt.id;log(`${h.name} tisse un Lien de force vers ${tgt.name} (+2 aux attaques).`,'good');}
+ else if(sid==='lienleger'){tgt.light=2;log(`${tgt.name} se sent léger (+1 case par déplacement).`,'good');}
+ else if(sid==='lienvie'){if(tgt.side==='h'){const v=d(6);tgt.pv=Math.min(tgt.pv0,tgt.pv+v);log(`Lien de vie : ${tgt.name} regagne ${v} PV.`,'good');}else heroAttack(h,tgt,6,'Lien de vie');}
+ else if(sid==='cible'){G.illum[h.id]=tgt.id;log(`${tgt.name} se met à briller : +2 pour la toucher.`,'good');}
+ else if(sid==='piege'){G.traps.push({x:tgt[0],y:tgt[1]});log(`${h.name} trace un Piège runique.`,'good');}
+ else if(sid==='marteau'){if(heroAttack(h,tgt,6,'Marteau')&&tgt.pv>0&&!tgt.big&&tgt.kind!=='leurre'){const dx=Math.sign(tgt.x-h.x),dy=Math.sign(tgt.y-h.y);
+   for(let i=0;i<2;i++){const nx=tgt.x+dx,ny=tgt.y+dy;const ch=cell(nx,ny);if(solid(ch)||'OZ#'.includes(ch)||unitAt(nx,ny))break;tgt.x=nx;tgt.y=ny;}tgt.stuck=1;log(`${tgt.name} est repoussé et sonné.`,'');}}
+ else if(sid==='lance'){const dx=Math.sign(tgt.x-h.x),dy=Math.sign(tgt.y-h.y);const hit=new Set();for(let i=1;i<=2;i++){const u=unitAt(h.x+dx*i,h.y+dy*i);if(u&&u.side==='c')hit.add(u);}
+   [...hit].forEach((u)=>heroAttack(h,u,6,'Lance'));}
+ else if(sid==='flocon'){if(heroAttack(h,tgt,4,'Flocon')&&tgt.pv>0)tgt.slow=1;}
+ else if(sid==='decharge'){heroAttack(h,tgt,4,'Décharge');const o=alive('c').filter((u)=>u!==tgt&&dist(u,tgt)<=2).sort((a,b)=>dist(a,tgt)-dist(b,tgt))[0];if(o){log('L’éclair rebondit…','');heroAttack(h,o,4,'Rebond');}}
+ else if(sid==='gravillons'){const[x,y]=tgt;const hit=new Set();[[x,y],[x+1,y],[x,y+1],[x+1,y+1]].forEach(([a,b])=>{const u=unitAt(a,b);if(u&&u.side==='c')hit.add(u);});
+   if(!hit.size)log('Les gravillons ne touchent personne.','');[...hit].forEach((u)=>heroAttack(h,u,4,'Gravillons'));}
+ else if(sid==='pasombre'){h.x=tgt[0];h.y=tgt[1];log(`${h.name} disparaît dans une ombre et réapparaît plus loin.`,'');}
+ else if(sid==='echange'){if(tgt.side==='c'&&!roll(attackScore(h,tgt),'Échange d’ombres sur '+tgt.name)){}else{const x=h.x,y=h.y;h.x=tgt.x;h.y=tgt.y;tgt.x=x;tgt.y=y;log(`${h.name} échange sa place avec ${tgt.name}.`,'');}}
+ else heroAttack(h,tgt,S.d,S.n);
+ afterAction();}
+function famMission(h,tgt){G.acts--;h.famRound=G.round;const F=h.fam;
+ if(F==='lynx'){heroAttackFam(h,tgt,'Bond du Lynx');if(tgt.pv>0){tgt.lured=h.id;log(`${tgt.name}, furieux, ne voit plus que le Lynx.`,'');}}
+ else if(F==='chacal')heroAttackFam(h,tgt,'Morsure du Chacal');
+ else if(F==='tatou'){G.blocks.push(key(tgt[0],tgt[1]));log('Le Tatou se roule en boule et bloque une case.','good');}
+ else if(F==='panda'){tgt.sleep=1;log(`La berceuse du Panda endort ${tgt.name}.`,'good');}
+ afterAction();}
+function heroAttackFam(h,t,label){if(roll(h.mai-h.malus-t.def,label+' sur '+t.name))hurt(t,d(4)+h.dmgb,h);}
+function useAtout(h){const F=h.fam;h.atout++;
+ if(F==='gecko'){alive('c').filter((c)=>dist(c,h)<=2).forEach((c)=>{c.blind=1;});log('Éclat aveuglant du Gecko : −3 à l’attaque des créatures proches ce round.','good');}
+ if(F==='hibou'){h.hitb=2;log('Le Hibou pique : +2 à la prochaine attaque.','good');}
+ if(F==='lynx'){h.dodge=true;log('Insaisissable : −2 pour toucher '+h.name+' jusqu’à son prochain tour.','good');}
+ if(F==='chacal'){h.dmgx=true;log('Le Chacal montre les crocs : +d4 à la prochaine attaque réussie.','good');}
+ if(F==='tatou'){h.immune=true;G.acts=Math.min(G.acts,G.acts);h.moved=true;log('Carapace : aucun dégât pour '+h.name+' ce round.','good');}
+ if(F==='panda'){h.e=Math.min(h.e0,h.e+1);const o=alive('h').filter((u)=>u!==h&&dist(u,h)<=2).sort((a,b)=>a.e-b.e)[0];if(o)o.e=Math.min(o.e0,o.e+1);log('Rêve partagé : +1 Éclat'+(o?' pour '+h.name+' et '+o.name:'')+'.','good');}
+ render();}
+
+/* ================= Phase du Voile ================= */
+function voilePhase(){
+ log('— Phase du Voile —','bad');
+ const boss=alive('c').find((c)=>c.kind==='lumivore');const leurre=alive('c').find((c)=>c.kind==='leurre');
+ for(const c of alive('c').slice()){
+  if(G.over)return;if(c.pv<=0)continue;
+  if(c.kind==='vesse'||c.kind==='leurre')continue;
+  if(c.sleep){c.sleep=0;log(`${c.name} dort.`,'');continue;}
+  if(c.kind==='lumivore'){bossTurn(c,leurre);continue;}
+  const hs=alive('h');if(!hs.length)return;
+  if(c.lured){const owner=byId(c.lured);c.lured=null;if(owner&&!owner.down){if(roll(c.att-2,`${c.name} attaque le Lynx de ${owner.name}`)){owner.famRest=G.round+1;log('Le Lynx est touché : il se repose un round.','bad');}continue;}}
+  let tgt;
+  if(c.kind==='blaireau'&&G.round%2===0){tgt=hs.slice().sort((a,b)=>a.pv-b.pv)[0];const spot=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tgt.x+dx,tgt.y+dy]).find(([x,y])=>{const ch=cell(x,y);return !solid(ch)&&!'OZ#'.includes(ch)&&!unitAt(x,y);});
+   if(spot){c.x=spot[0];c.y=spot[1];log('Le Blaireau s’enterre et ressort à côté de '+tgt.name+' !','bad');}}
+  else if(c.kind==='cracheur'){const inr=hs.filter((h)=>dist(h,c)<=3);if(!inr.length)continue;tgt=inr.sort((a,b)=>dist(a,c)-dist(b,c)||a.pv-b.pv)[0];}
+  else{tgt=hs.slice().sort((a,b)=>dist(a,c)-dist(b,c)||a.pv-b.pv)[0];
+   if(dist(c,tgt)>1&&!c.stuck){const mp=Math.max(0,c.mv-(c.slow?1:0));const R=reach(c,mp);const F=bfsField(tgt.x,tgt.y,c);let best=null,bv=1e9;
+    R.forEach((cost,k)=>{const[x,y]=k.split(',').map(Number);const v=(F.has(k)?F.get(k):40+Math.abs(x-tgt.x)+Math.abs(y-tgt.y))*10+cost;if(v<bv){bv=v;best=[x,y];}});
+    if(best){c.x=best[0];c.y=best[1];const tr=G.traps.findIndex((t)=>t.x===c.x&&t.y===c.y);
+     if(tr>=0){G.traps.splice(tr,1);log(`${c.name} déclenche un Piège runique !`,'good');hurt(c,d(8),null);if(c.pv<=0)continue;c.stuck=2;}}}}
+  c.slow=0;if(c.stuck)c.stuck--;
+  if(!tgt||c.pv<=0)continue;
+  const reachA=c.kind==='cracheur'?3:1;if(dist(c,tgt)>reachA)continue;
+  creatureAttack(c,tgt);}
+ if(G.over)return;
+ // entretien de la lumière
+ let loss=1+(tile().brume?1:0);if(leurre&&leurre.pv>0&&boss&&boss.pv>0){loss++;log('Le leurre dévore la lumière : −1 charge.','bad');}
+ if(G.dark>0){loss++;G.dark--;log('La clairière est plongée dans le noir : −1 charge.','bad');}
+ G.charge-=loss;log(`La lanterne perd ${loss} charge${loss>1?'s':''} (reste ${Math.max(0,G.charge)}).`,'');
+ if(G.charge>0&&G.charge<=3)log('« La lanterne vacille… »','bad');
+ G.blocks=[];alive('c').forEach((c)=>{c.blind=0;});alive('h').forEach((h)=>{if(h.light>0)h.light--;h.malus=h.malusNext||0;h.malusNext=0;});
+ checkEnd();}
+function creatureAttack(c,t){
+ let s=c.att-t.def-(c.blind?3:0)-(t.dodge?2:0);
+ if(Object.values(G.armor).includes(t.id))s-=2;
+ if(c.kind==='cracheur'&&cell(t.x,t.y)==='F')s-=2;
+ if(t.riposte&&dist(c,t)===1&&c.kind!=='cracheur'){log(`Riposte de ${t.name} !`,'good');hurt(c,d(4),t);if(c.pv<=0)return;}
+ if(roll(s,`${c.name} attaque ${t.name}`)){hurt(t,d(c.dmg),c);
+  if(c.kind==='phalene'){G.charge--;log('La Phalène aspire la lumière : −1 charge.','bad');}
+  if(c.kind==='cracheur'){t.malusNext=2;log(`Les spores troublent ${t.name} : −2 en Maîtrise à son prochain tour.`,'');}}}
+function bossTurn(b,leurre){
+ if(G.diving){G.diving=false;log('Le Lumivore reste sous le mycélium…','');return;}
+ const hs=alive('h');if(!hs.length)return;
+ if(leurre&&leurre.pv>0){const farH=hs.slice().sort((a,c)=>dist(c,b)-dist(a,b))[0];
+  if(!roll(farH.inst,`${farH.name} résiste à l’attraction du leurre (Instinct)`)){const F=bfsField(b.x,b.y,farH);
+   for(let i=0;i<2;i++){const opts=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[farH.x+dx,farH.y+dy]).filter(([x,y])=>!unitAt(x,y)&&stepCost(farH,cell(x,y))<99).sort((p,q)=>(F.get(key(p[0],p[1]))??99)-(F.get(key(q[0],q[1]))??99));
+    if(opts[0]){farH.x=opts[0][0];farH.y=opts[0][1];}}log(`${farH.name} avance, fasciné, vers la lumière.`,'bad');}}
+ const inr=hs.filter((h)=>dist(h,b)<=4);if(!inr.length){log('Le Lumivore guette, immobile.','');return;}
+ const t=inr.sort((a,c)=>a.pv-c.pv)[0];
+ if(roll(b.att-t.def-(Object.values(G.armor).includes(t.id)?2:0)-(t.dodge?2:0)-(b.blind?3:0),`Langue du Lumivore sur ${t.name}`)){hurt(t,d(6),b);
+  if(!t.down&&dist(t,b)>1){const spot=freeCells((x,y)=>dist({x,y},b)===1&&stepCost(t,cell(x,y))<99).sort((p,q)=>(Math.abs(p[0]-t.x)+Math.abs(p[1]-t.y))-(Math.abs(q[0]-t.x)+Math.abs(q[1]-t.y)))[0];
+   if(spot){t.x=spot[0];t.y=spot[1];log(`${t.name} est tiré contre le Lumivore !`,'bad');}}}}
+
+/* ================= Exploration ================= */
+function drawCard(){return G.deck.length?G.deck.pop():null;}
+function drawEquip(){const i=G.deck.findIndex((c)=>EQUIP.includes(c));return i>=0?G.deck.splice(i,1)[0]:null;}
+function gainItem(it,h,why){if(!it||!h)return;
+ if(it==='cristal'){G.charge+=2;log(`${why} un Cristal de lumière : +2 charges.`,'good');return;}
+ if(EQUIP.includes(it)){h.eq.push(it);if(it==='talisman')h.def++;if(it==='pierre')h.mai++;if(it==='bourse'){h.e0++;h.e++;}if(it==='bottes')h.mv++;log(`${why} : ${ITEMS[it]}, équipé par ${h.name}.`,'good');return;}
+ const taker=[h].concat(alive('h')).find((u)=>u.bag.length<3);if(taker){taker.bag.push(it);log(`${why} : ${ITEMS[it]} (dans le sac de ${taker.name}).`,'good');}else log(`${why} : ${ITEMS[it]}, mais les sacs sont pleins.`,'');}
+function searchPoints(){const pts=[];tile().g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='P')pts.push([x,y]);}));return pts.filter(([x,y])=>!G.searched[G.tile+key(x,y)]);}
+function doSearch(h,viaFam){
+ const pts=searchPoints();if(!pts.length)return;const[x,y]=pts[0];h.free=false;
+ const bonus=h.race==='humain'?1:0;
+ if(roll(h.inst+bonus,`Fouille de ${viaFam?'son Gecko pour ':''}${h.name}`)){G.searched[G.tile+key(x,y)]=true;
+  if(G.tile==='t1'){log(tile().clue,'story');}else gainItem(drawCard(),h,'Trouvé');}
+ else log('Rien… mais on peut réessayer au prochain tour.','');render();}
+function useItem(h,it){const i=h.bag.indexOf(it);if(i<0)return;h.bag.splice(i,1);
+ if(it==='soin'){h.pv=Math.min(h.pv0,h.pv+6);log(`${h.name} boit une potion de soin (+6 PV).`,'good');}
+ if(it==='souffle'){h.e=h.e0;log(`${h.name} boit une potion de second souffle : Éclats au maximum.`,'good');}
+ if(it==='seve'){const v=d(6);h.pv=Math.min(h.pv0,h.pv+v);log(`${h.name} boit de la sève de lune (+${v} PV).`,'good');}
+ if(it==='eclat'){h.e=Math.min(h.e0,h.e+2);log(`${h.name} absorbe un éclat brut (+2 Éclats).`,'good');}
+ if(it==='bulle'){log(`${h.name} respire la bulle d’air : Souffle au maximum.`,'good');}
+ if(it==='curio'){if(h.race==='humain'){G.charge+=2;log(`${h.name} étudie la curiosité : Découverte ! La lanterne gagne 2 charges.`,'good');}else{h.bag.push(it);log('Sans Humain, cette curiosité reste un mystère.','');return render();}}
+ if(G.mode==='combat'){G.acts--;afterAction();}else{h.free=false;render();}}
+function advance(dir){
+ const T=tile();const to=T.exits[dir];if(!to)return;
+ const cost=1+((TILES[to].brume||T.brume)?1:0);G.charge-=cost;
+ alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.free=true;});
+ log(`Le groupe part vers le ${DIRN[dir]} (−${cost} charge${cost>1?'s':''}).`,'');
+ if(checkEnd())return render();enterTile(to,OPP[dir]);if(!checkEnd())render();else render();}
+function rest(){G.charge--;alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.free=true;});log('Le groupe se repose un tour : +1 Éclat chacun, −1 charge.','');checkEnd();render();}
+
+/* ================= Interaction plateau ================= */
+function setPending(p){G.pending=p;render();}
+function targetsFor(h,S,sid){
+ const out=[];const R=S.r;if(S.t==='self')return [h];
+ if(S.t==='foe'||S.t==='foeauto'){alive('c').forEach((c)=>{if(c.kind==='lumivore'&&G.diving)return;if(dist(h,c)<=R)out.push(c);});}
+ if(S.t==='line'){alive('c').forEach((c)=>{if(c.big)return;if((c.x===h.x||c.y===h.y)&&dist(h,c)<=R)out.push(c);});}
+ if(S.t==='any'){alive('h').forEach((u)=>{if(dist(h,u)<=R)out.push(u);});alive('c').forEach((c)=>{if(dist(h,c)<=R&&!(c.kind==='lumivore'&&G.diving))out.push(c);});}
+ if(S.t==='ally'){alive('h').forEach((u)=>{if(u!==h&&dist(h,u)<=R)out.push(u);});}
+ if(S.t==='allyself'){alive('h').forEach((u)=>{if(dist(h,u)<=R)out.push(u);});}
+ if(S.t==='swap'){G.units.forEach((u)=>{if(u!==h&&u.pv>0&&!u.down&&!u.big&&u.kind!=='leurre'&&dist(h,u)<=R)out.push(u);});}
+ if(S.t==='cell'||S.t==='tele'){freeCells((x,y)=>Math.abs(x-h.x)+Math.abs(y-h.y)<=R).forEach((p)=>out.push(p));}
+ if(S.t==='area'){for(let y=0;y<7;y++)for(let x=0;x<7;x++){if(Math.abs(x-h.x)+Math.abs(y-h.y)<=R)out.push([x,y]);}}
+ return out;}
+function clickCell(x,y){
+ if(G.over)return;const P=G.pending;
+ if(!P){const u=unitAt(x,y);if(u&&u.side==='h'&&G.mode==='explore'){G.sel=u.id;render();}return;}
+ const h=curHero();
+ if(P.type==='move'){const k=key(x,y);if(!P.cells.has(k))return;h.x=x;h.y=y;G.acts--;h.moved=true;G.pending=null;afterAction();return;}
+ const match=P.targets.find((t)=>Array.isArray(t)?(t[0]===x&&t[1]===y):cellsOf(t).some(([a,b])=>a===x&&b===y));
+ if(!match)return;G.pending=null;
+ if(P.type==='spell')castSpell(h,P.sid,match);else if(P.type==='fam')famMission(h,match);}
+
+/* ================= Rendu ================= */
+function render(){
+ if(!G)return;
+ $('lfill').style.width=Math.max(0,Math.min(100,G.charge/30*100))+'%';$('lnum').textContent=Math.max(0,G.charge);
+ $('mode').textContent=G.mode==='combat'?`Combat · round ${G.round}`:'Exploration';
+ const T=tile();$('tilename').textContent=T.name;$('tilerole').textContent=T.role+(T.brume?' · −1 charge':'');
+ drawBoard();drawActive();drawRoster();drawFoes();
+ $('log').innerHTML=G.log.slice().reverse().map((l)=>`<p class="${l.cls}">${esc(l.t)}</p>`).join('');
+ if(G.over)showEnd();
+ window.claude?.hot?.snapshot?.(()=>Object.assign({},G,{pending:null}));}
+function creatureSVG(u,px,py,S){
+ const C=CRE[u.kind];const cx=px+S/2,cy=py+S/2;let s='';
+ if(u.kind==='chenille')s=`<ellipse cx="${cx-9}" cy="${cy+4}" rx="8" ry="7" fill="${C.c}"/><ellipse cx="${cx}" cy="${cy+2}" rx="9" ry="8" fill="${C.c}"/><circle cx="${cx+9}" cy="${cy-1}" r="8" fill="#f4f0ff"/><circle cx="${cx+12}" cy="${cy-3}" r="2" fill="#222"/><circle cx="${cx-3}" cy="${cy-3}" r="2" fill="#a77cf0"/>`;
+ else if(u.kind==='phalene')s=`<path d="M${cx} ${cy} q-20 -18 -22 4 q10 10 22 -4 q20 -18 22 4 q-10 10 -22 -4" fill="${C.c}" stroke="#d9e4ff"/><circle cx="${cx-11}" cy="${cy-1}" r="3" fill="#ffe08a"/><circle cx="${cx+11}" cy="${cy-1}" r="3" fill="#ffe08a"/><rect x="${cx-2}" y="${cy-8}" width="4" height="16" rx="2" fill="#eef"/>`;
+ else if(u.kind==='cracheur')s=`<rect x="${cx-5}" y="${cy}" width="10" height="14" rx="3" fill="#e8e0c8"/><path d="M${cx-17} ${cy+2} q17 -24 34 0 z" fill="${C.c}"/><circle cx="${cx-6}" cy="${cy-6}" r="2" fill="#cfe9b0"/><circle cx="${cx+5}" cy="${cy-4}" r="2" fill="#cfe9b0"/>`;
+ else if(u.kind==='vesse')s=`<circle cx="${cx}" cy="${cy+3}" r="14" fill="#f0e2c8"/><path d="M${cx-9} ${cy} q9 6 18 0 M${cx-7} ${cy+8} q7 4 14 0" stroke="${C.c}" stroke-width="2.5" fill="none"/>`;
+ else if(u.kind==='blaireau')s=`<ellipse cx="${cx}" cy="${cy+4}" rx="19" ry="12" fill="${C.c}"/><path d="M${cx+6} ${cy-6} l12 6 -12 6z" fill="#3a2f24"/><rect x="${cx-10}" y="${cy-3}" width="20" height="4" rx="2" fill="#bdf0a0"/>`;
+ else if(u.kind==='leurre')s=`<circle cx="${cx}" cy="${cy}" r="16" fill="#ffe8a0" opacity=".45"/><path d="M${cx} ${cy-12} l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1z" fill="${C.c}"/>`;
+ else if(u.kind==='lumivore'){const W=S*2;const bx=px,by=py;s=`<ellipse cx="${bx+W/2}" cy="${by+W/2+8}" rx="${W/2-6}" ry="${W/2-14}" fill="${G.diving?'#1c3329':C.c}" stroke="#a7d3b8" stroke-width="2"/>`+
+  [0,1,2,3,4].map((i)=>`<circle cx="${bx+22+i*17}" cy="${by+W/2-12+(i%2)*6}" r="5" fill="#cfe9d8"/>`).join('')+`<ellipse cx="${bx+W/2-20}" cy="${by+W/2}" rx="7" ry="5" fill="#ffe08a"/><ellipse cx="${bx+W/2+20}" cy="${by+W/2}" rx="7" ry="5" fill="#ffe08a"/><path d="M${bx+22} ${by+W/2+20} q${W/2-22} 16 ${W-44} 0" stroke="#10251c" stroke-width="4" fill="none"/>`;}
+ return s;}
+function drawBoard(){
+ const S=60,P=10,W=8*S+2*P;const T=tile();const h=curHero();const P_=G.pending;let s=`<rect x="0" y="0" width="${W}" height="${W}" rx="12" fill="#22402e"/>`;
+ T.g.forEach((row,y)=>[...row].forEach((ch,x)=>{const px=P+x*S,py=P+y*S;s+=`<rect x="${px}" y="${py}" width="${S}" height="${S}" fill="${COL[ch]||COL['.']}" stroke="rgba(0,0,0,.2)" data-x="${x}" data-y="${y}"/>`;
+  if(ch==='T')s+=`<circle cx="${px+30}" cy="${py+30}" r="23" fill="#244a2e" pointer-events="none"/><circle cx="${px+24}" cy="${py+24}" r="13" fill="#3c7048" pointer-events="none"/>`;
+  if(ch==='R')s+=`<ellipse cx="${px+30}" cy="${py+34}" rx="20" ry="14" fill="#6f6c63" pointer-events="none"/>`;
+  if(ch==='M')s+=`<path d="M${px} ${py+20}h${S}M${px} ${py+40}h${S}M${px+20} ${py}v20M${px+40} ${py+20}v20M${px+20} ${py+40}v20" stroke="#7d7262" stroke-width="2" pointer-events="none"/>`;
+  if(ch==='W'||ch==='O')s+=`<path d="M${px+10} ${py+30} q8 -6 16 0 t16 0" stroke="rgba(255,255,255,.5)" stroke-width="2" fill="none" pointer-events="none"/>`;
+  if(ch==='F')s+=`<path d="M${px+18} ${py+48} q4 -22 12 -30 M${px+30} ${py+48} q2 -18 12 -24 M${px+42} ${py+48} q-2 -16 -14 -22" stroke="#3f7a3a" stroke-width="3" fill="none" pointer-events="none"/>`;
+  if(ch==='D')s+=`<path d="M${px+8} ${py+40} q14 -16 22 2 t22 -6" stroke="#5c4329" stroke-width="4" fill="none" pointer-events="none"/>`;
+  const lab={P:G.searched[G.tile+key(x,y)]?'':'?',A:'!',L:'✿','*':'*'}[ch];
+  if(lab)s+=`<text x="${px+30}" y="${py+38}" text-anchor="middle" font-size="22" font-weight="800" fill="#3a2a10" pointer-events="none">${lab}</text>`;}));
+ if(T.brume)s+=`<rect x="${P}" y="${P}" width="${8*S}" height="${8*S}" fill="#e8eef2" opacity=".22" pointer-events="none"/>`;
+ if(G.dark>0)s+=`<rect x="${P}" y="${P}" width="${8*S}" height="${8*S}" fill="#000" opacity=".3" pointer-events="none"/>`;
+ // sorties
+ const mid=P+3*S,len=2*S,end=P+8*S;const ex=Object.keys(T.exits).filter((dd)=>!(T.hidden&&!G.altar));
+ const bar={O:[0,mid,P,len],E:[end,mid,P,len],N:[mid,0,len,P],S:[mid,end,len,P]};ex.forEach((dd)=>{const b=bar[dd];s+=`<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" fill="#f2c14b"/>`;});
+ G.blocks.forEach((k)=>{const[x,y]=k.split(',').map(Number);s+=`<circle cx="${P+x*S+30}" cy="${P+y*S+30}" r="20" fill="#8d8a80" stroke="#fff" stroke-width="2" pointer-events="none"/>`;});
+ G.traps.forEach((t)=>{s+=`<circle cx="${P+t.x*S+30}" cy="${P+t.y*S+30}" r="14" fill="none" stroke="#9ed38a" stroke-width="3" stroke-dasharray="4 3" pointer-events="none"/>`;});
+ // surbrillance
+ if(P_){if(P_.type==='move')P_.cells.forEach((v,k)=>{const[x,y]=k.split(',').map(Number);if(x===h.x&&y===h.y)return;s+=`<rect x="${P+x*S+3}" y="${P+y*S+3}" width="${S-6}" height="${S-6}" rx="8" fill="#f2c14b" opacity=".38" pointer-events="none"/>`;});
+  else P_.targets.forEach((t)=>{const cs=Array.isArray(t)?[t]:cellsOf(t);cs.forEach(([x,y])=>{s+=`<rect x="${P+x*S+3}" y="${P+y*S+3}" width="${S-6}" height="${S-6}" rx="8" fill="none" stroke="#ffd97a" stroke-width="4" pointer-events="none"/>`;});});}
+ // unités
+ G.units.forEach((u)=>{if(u.pv<=0&&u.side==='c')return;const px=P+u.x*S,py=P+u.y*S;
+  if(u.side==='h'){if(u.down)return;const cur=h&&h.id===u.id;s+=`<g pointer-events="none"><circle cx="${px+30}" cy="${py+30}" r="${cur?24:21}" fill="${u.color}" stroke="${cur?'#ffd97a':'#10170f'}" stroke-width="${cur?4:2}"/><text x="${px+30}" y="${py+36}" text-anchor="middle" font-size="17" font-weight="800" fill="#10170f">${esc(u.name.slice(0,2))}</text>`+
+   (Object.values(G.armor).includes(u.id)?`<circle cx="${px+30}" cy="${py+30}" r="27" fill="none" stroke="#9fb7d9" stroke-width="2"/>`:'')+
+   `<rect x="${px+8}" y="${py+52}" width="44" height="5" rx="2" fill="#3a2a28"/><rect x="${px+8}" y="${py+52}" width="${44*Math.max(0,u.pv)/u.pv0}" height="5" rx="2" fill="#8fd694"/></g>`;}
+  else{const wB=u.big?2*S:S;s+=`<g pointer-events="none" opacity="${u.kind==='lumivore'&&G.diving?.45:1}">${creatureSVG(u,px,py,S)}`+(u.sleep?`<text x="${px+wB-12}" y="${py+16}" font-size="14" fill="#fff">z</text>`:'')+
+   (Object.values(G.illum).includes(u.id)?`<circle cx="${px+wB/2}" cy="${py+wB/2}" r="${wB/2-4}" fill="none" stroke="#ffd97a" stroke-width="2" stroke-dasharray="3 3"/>`:'')+
+   `<rect x="${px+8}" y="${py+wB-8}" width="${wB-16}" height="5" rx="2" fill="#3a2a28"/><rect x="${px+8}" y="${py+wB-8}" width="${(wB-16)*Math.max(0,u.pv)/u.pv0}" height="5" rx="2" fill="#e2675b"/></g>`;}});
+ $('board').innerHTML=s;
+ $('tip').textContent=G.pending?(G.pending.type==='move'?'Clique une case dorée pour te déplacer (Échap pour annuler).':'Clique une cible encadrée (Échap pour annuler).'):'';}
+function heroLine(h){return `${CLASSES[h.cls].n} · ${RACES[h.race].n} · ${FAMS[h.fam].n}`;}
+function btn(label,sub,act,dis,cls){return `<button type="button" class="btn ${cls||''}" data-act="${esc(act)}" ${dis?'disabled':''}>${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</button>`;}
+function drawActive(){
+ const h=curHero();if(!h){$('active').innerHTML='';return;}
+ let s=`<h3>${esc(h.name)} <span class="mini">${esc(heroLine(h))}</span></h3>`;
+ s+=`<div class="stats"><span class="stat">❤️ ${h.pv}/${h.pv0}</span><span class="stat">🛡️ Déf ${h.def}${Object.values(G.armor).includes(h.id)?'+2':''}</span><span class="stat">🎯 Maît ${h.mai}${h.malus?' −'+h.malus:''}</span><span class="stat">💎 ${h.e}/${h.e0}</span><span class="stat">👁️ Inst ${h.inst}</span><span class="stat">👣 ${h.mv+(h.light?1:0)}</span></div>`;
+ s+=`<p class="hint">Talent : ${esc(RACES[h.race].t)}${h.eq.length?' · Équipement : '+esc(h.eq.map((e)=>ITEMS[e]).join(', ')):''}</p>`;
+ let a='';
+ if(G.mode==='combat'){
+  s+=`<p class="hint">Actions restantes : <b>${G.acts}</b> · le familier et son atout comptent à part</p>`;
+  a+=btn('Se déplacer',`${h.mv+(h.light?1:0)} cases`,'move',G.acts<1||h.immune);
+  CLASSES[h.cls].sp.forEach((sid)=>{const S=SP[sid];a+=btn(`${S.n} (${S.c}💎)`,S.txt,'sp:'+sid,G.acts<1||h.e<S.c||!targetsFor(h,S,sid).length);});
+  const F=h.fam;const famOk=['lynx','chacal','tatou','panda'].includes(F)&&h.famRound!==G.round&&h.famRest<G.round;
+  a+=btn(`Mission : ${FAMS[F].n}`,FAMS[F].m,'fam',G.acts<1||!famOk||!famTargets(h).length);
+  const maxA=h.race==='marque'?2:1;a+=btn(`Atout : ${FAMS[F].n}`,FAMS[F].a+(h.atout>=maxA?' (déjà utilisé)':''),'atout',h.atout>=maxA);
+  h.bag.forEach((it,i)=>{a+=btn('Utiliser : '+ITEMS[it],'1 action','item:'+it,G.acts<1);});
+  a+=btn('Finir le tour','','end',false,'main');}
+ else{
+  s+=`<p class="hint">Exploration : chaque héros a <b>1 action libre</b> par tour. ${h.free?'':'(déjà utilisée)'}</p>`;
+  const pts=searchPoints();a+=btn('Fouiller',pts.length?'test d’Instinct'+(h.race==='humain'?' +1':''):'aucun point de fouille','search',!h.free||!pts.length);
+  if(h.fam==='gecko')a+=btn('Mission : Gecko','fouille à distance','gecko',!h.free||!pts.length);
+  if(h.fam==='hibou')Object.keys(tile().exits).forEach((dd)=>{if(tile().hidden&&!G.altar)return;a+=btn('Hibou : vigie '+DIRN[dd],'ce qui attend là-bas','peek:'+dd,!h.free);});
+  if(tile().g.some((r)=>r.includes('A'))&&!(G.tile==='t4'&&G.altar)&&!(G.tile==='t1'&&G.altarT1))a+=btn('Interagir avec '+(G.tile==='t1'?'la borne':'l’autel'),'','altar',!h.free);
+  if(G.tile==='t6'&&G.flowers<4)a+=btn('Cueillir une fleur-lanterne',`+2 charges (${4-G.flowers} restantes)`,'flower',!h.free);
+  if(h.cls==='tisseur')a+=btn('Lien de vie (1💎)','soigne d6 un allié','heal',!h.free||h.e<1);
+  h.bag.forEach((it)=>{a+=btn('Utiliser : '+ITEMS[it],'',('item:'+it),!h.free);});}
+ $('active').innerHTML=s+`<div class="acts">${a}</div>`+(G.mode==='explore'?groupActions():'');}
+function groupActions(){const T=tile();let a='';
+ const ex=Object.keys(T.exits).filter((dd)=>!(T.hidden&&!G.altar));
+ ex.forEach((dd)=>{const to=TILES[T.exits[dd]];const cost=1+((to.brume||T.brume)?1:0);a+=btn(`Partir vers le ${DIRN[dd]}`,`−${cost} charge · +1 Éclat chacun`,'go:'+dd,false,'main');});
+ if(T.hidden&&!G.altar)a+=`<p class="hint">Les sorties de ces ruines sont cachées. Interagissez avec l’autel (!).</p>`;
+ a+=btn('Se reposer un tour','−1 charge · +1 Éclat chacun · actions libres rendues','rest');
+ if(G.peek)a+=`<p class="hint">${esc(G.peek)}</p>`;
+ return `<h3 style="margin-top:12px">Le groupe</h3><div class="acts">${a}</div>`;}
+function famTargets(h){const F=h.fam;
+ if(F==='lynx'||F==='chacal')return alive('c').filter((c)=>dist(c,h)<=4&&!(c.kind==='lumivore'&&G.diving));
+ if(F==='panda')return alive('c').filter((c)=>dist(c,h)<=4&&!c.big&&c.kind!=='leurre'&&c.kind!=='vesse');
+ if(F==='tatou')return freeCells((x,y)=>Math.abs(x-h.x)+Math.abs(y-h.y)<=4);
+ return [];}
+function drawRoster(){
+ $('roster').innerHTML=heroes().map((h)=>{const cur=curHero()&&curHero().id===h.id;
+  return `<div class="hero ${cur?'cur':''} ${h.down?'down':''}" data-hero="${h.id}"><span class="dot" style="background:${h.color}">${esc(h.name.slice(0,2))}</span><div><b>${esc(h.name)}</b> <span class="mini">${esc(CLASSES[h.cls].n)}${G.mode==='combat'&&h.ini?' · init '+h.ini:''}</span><div class="hp"><div style="width:${100*Math.max(0,h.pv)/h.pv0}%"></div></div></div><span class="mini">❤️${h.pv} 💎${h.e}${h.bag.length?' 🎒'+h.bag.length:''}</span></div>`;}).join('')+
+  (G.carnet.length?`<p class="hint">Carnet : ${esc(G.carnet.map((c)=>c.nom+' (niv. '+c.niveau+')').join(', '))}</p>`:'');}
+function drawFoes(){const cs=alive('c');
+ $('foes').innerHTML=`<h3>${cs.length?'Créatures':'Aucune créature en vue'}</h3>`+cs.map((c)=>`<div class="hero"><span class="dot" style="background:${CRE[c.kind].c}"></span><div><b>${esc(c.name)}</b> <span class="mini">att ${c.att} · déf ${c.def} · d${c.dmg}${c.sleep?' · endormi':''}${c.stuck?' · immobilisé':''}</span><div class="hp"><div style="width:${100*c.pv/c.pv0}%;background:#e2675b"></div></div></div><span class="mini">${c.pv}/${c.pv0}</span></div>`).join('');}
+
+/* ================= Écrans ================= */
+function showSetup(){
+ const races=Object.keys(RACES),cls=Object.keys(CLASSES),fams=Object.keys(FAMS);
+ const def=[['Aube','humain','rempart','tatou'],['Brin','marque','tisseur','panda'],['Cyr','oiseau','elementaliste','gecko'],['Dune','loutre','pisteur','hibou'],['Éole','astreen','lamesort','chacal']];
+ const opt=(arr,M,v)=>arr.map((k)=>`<option value="${k}" ${k===v?'selected':''}>${esc(M[k].n)}</option>`).join('');
+ let rows='';for(let i=0;i<5;i++){const d0=def[i];rows+=`<div class="srow" id="row${i}"><input id="nm${i}" value="${d0[0]}" maxlength="14" aria-label="Nom du héros ${i+1}"><select id="ra${i}" aria-label="Race">${opt(races,RACES,d0[1])}</select><select id="cl${i}" aria-label="Classe">${opt(cls,CLASSES,d0[2])}</select><select id="fa${i}" aria-label="Familier">${opt(fams,FAMS,d0[3])}</select></div>`;}
+ $('dialog').innerHTML=`<h2>Préparer l’expédition</h2><p class="hint">Mission 1 de PoundaGame, version de test v0.2 : les règles figées de la bible, les dés lancés automatiquement. Tous les joueurs partagent cet écran.</p>
+ <label style="display:flex;gap:10px;align-items:center;margin-top:10px">Nombre de héros <select id="nb" style="width:auto">${[2,3,4,5].map((n)=>`<option ${n===3?'selected':''}>${n}</option>`).join('')}</select></label>
+ <div class="setup">${rows}</div><p class="hint">À 2 héros : +1 aux dégâts et +3 PV chacun. Chaque héros part avec 1 potion de soin et 1 potion de second souffle.</p>
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="go">Entrer dans le Voile</button></div>`;
+ $('overlay').hidden=false;
+ const upd=()=>{const n=+$('nb').value;for(let i=0;i<5;i++)$('row'+i).hidden=i>=n;};$('nb').onchange=upd;upd();
+ $('go').onclick=()=>{const n=+$('nb').value;const cfg=[];for(let i=0;i<n;i++)cfg.push({name:$('nm'+i).value.trim()||('Héros '+(i+1)),race:$('ra'+i).value,cls:$('cl'+i).value,fam:$('fa'+i).value});$('overlay').hidden=true;newGame(cfg);};}
+function showEnd(){
+ const win=G.over==='victoire';const hs=heroes();
+ const rows=hs.map((h)=>{const xp=G.xp[h.id]+(win&&!h.down?10:0)+(win?Math.max(0,G.charge):0);return `<tr><td>${esc(h.name)}</td><td>${h.down?'à terre':'debout'}</td><td>${G.xp[h.id]}</td><td>${win&&!h.down?10:0}</td><td>${win?Math.max(0,G.charge):0}</td><td><b>${xp}</b></td></tr>`;}).join('');
+ $('dialog').innerHTML=`<h2>${win?'Victoire !':'La mission échoue'}</h2><p class="hint">${win?'Le Lumivore est vaincu et la Lisière respire à nouveau.':'La brume reprend ses droits… mais vous reviendrez.'} Charges restantes : ${Math.max(0,G.charge)}.</p>
+ <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:14px"><thead><tr><th align="left">Héros</th><th align="left">État</th><th align="left">XP combats</th><th align="left">Mission</th><th align="left">Charges</th><th align="left">Total</th></tr></thead><tbody>${rows}</tbody></table></div>
+ ${G.carnet.length?`<p class="hint">Carnet d’exploration : ${esc(G.carnet.map((c)=>c.nom+' (niveau '+c.niveau+' '+c.danger+')').join(' ; '))}</p>`:''}
+ <p class="hint">XP provisoire : combats + 10 pour la mission réussie (héros debout) + 1 par charge restante.</p>
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="again">Rejouer</button></div>`;
+ $('overlay').hidden=false;$('again').onclick=()=>{showSetup();};}
+
+/* ================= Événements ================= */
+$('board').addEventListener('click',(ev)=>{const r=$('board').getBoundingClientRect();const sc=500/r.width;const x=Math.floor(((ev.clientX-r.left)*sc-10)/60),y=Math.floor(((ev.clientY-r.top)*sc-10)/60);if(x<0||y<0||x>7||y>7)return;clickCell(x,y);});
+document.addEventListener('keydown',(ev)=>{if(ev.key==='Escape'&&G&&G.pending){G.pending=null;render();}});
+$('roster').addEventListener('click',(ev)=>{const el=ev.target.closest('[data-hero]');if(!el||!G||G.mode!=='explore')return;const h=byId(el.dataset.hero);if(h&&!h.down){G.sel=h.id;render();}});
+$('active').addEventListener('click',(ev)=>{const b=ev.target.closest('button[data-act]');if(!b||b.disabled||!G||G.over)return;const act=b.dataset.act;const h=curHero();
+ if(act==='move'){setPending({type:'move',cells:reach(h,h.mv+(h.light?1:0))});return;}
+ if(act.startsWith('sp:')){const sid=act.slice(3);const S=SP[sid];if(S.t==='self'){castSpell(h,sid,h);return;}setPending({type:'spell',sid,targets:targetsFor(h,S,sid)});return;}
+ if(act==='fam'){setPending({type:'fam',targets:famTargets(h)});return;}
+ if(act==='atout'){useAtout(h);return;}
+ if(act.startsWith('item:')){useItem(h,act.slice(5));return;}
+ if(act==='end'){G.pending=null;nextHero();render();return;}
+ if(act==='search'){doSearch(h,false);return;}
+ if(act==='gecko'){doSearch(h,true);return;}
+ if(act.startsWith('peek:')){const dd=act.slice(5);const to=TILES[tile().exits[dd]];h.free=false;
+  const what={ruines:'des chenilles et une Phalène',saulaie:'une brume épaisse et un battement d’ailes',champi:'des champignons qui crachent… et des fleurs qui brillent',boss:'une lumière dorée immobile au-dessus d’une mare'}[to.fight]||'rien de vivant';
+  G.peek=`Le Hibou survole le ${DIRN[dd]} : ${to.name}, ${what}.`;log(G.peek,'story');render();return;}
+ if(act==='altar'){h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois : « Passeurs, la lanterne est votre souffle. Ne la laissez pas mourir. »','story');}
+  else{G.altar=true;log('L’autel s’éveille : deux chemins apparaissent. Au nord, une saulaie noyée de brume (plus court). À l’est, une champignonnière où brillent des fleurs (plus long, plus dangereux, plus riche).','story');}render();return;}
+ if(act==='flower'){h.free=false;G.flowers++;G.charge+=2;log(`${h.name} cueille une fleur-lanterne : +2 charges.`,'good');render();return;}
+ if(act==='heal'){const t=alive('h').slice().sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}
+ if(act.startsWith('go:')){advance(act.slice(3));return;}
+ if(act==='rest'){rest();return;}});
+$('newgame').onclick=showSetup;
+$('legend').innerHTML=[['#2f5b3a','Arbre, rocher, mur : bloquent'],['#6fa25a','Fougères : −2 aux tirs contre toi'],['#8a6a45','Racines : 2 cases'],['#7fb8d6','Eau peu profonde : 2 cases'],['#3f7fa8','Eau profonde : infranchissable'],['#c9a24a','? Fouille'],['#f2c14b','Sortie / fleur ✿']].map(([c,t])=>`<span><i class="sw" style="background:${c}"></i>${t}</span>`).join('');
+function start(data){if(data&&data.units){G=data;render();}else showSetup();}
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+}
+</script>
+</body>
+</html>
