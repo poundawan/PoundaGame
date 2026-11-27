@@ -286,7 +286,7 @@ function attackScore(h,t){let s=h.mai-h.malus-t.def;
  return s;}
 function hurt(t,n,src){
  if(t.side==='h'){if(t.immune){log(`${t.name} est protégé par sa carapace : aucun dégât.`,'good');return;}
-  t.pv-=n;log(`${t.name} perd ${n} PV (${Math.max(0,t.pv)}/${t.pv0}).`,'bad');if(t.pv<=0){t.pv=0;t.down=true;log(`${t.name} est à terre !`,'bad');}return;}
+  t.pv-=n;if(G.stats){G.stats.dmgTaken=(G.stats.dmgTaken||0)+n;const r=Math.max(0,t.pv)/t.pv0;G.stats.minR=Math.min(G.stats.minR??1,r);if(r<=0.25)G.stats.close=(G.stats.close||0)+1;}log(`${t.name} perd ${n} PV (${Math.max(0,t.pv)}/${t.pv0}).`,'bad');if(t.pv<=0){t.pv=0;t.down=true;log(`${t.name} est à terre !`,'bad');}return;}
  t.pv-=n;log(`${t.name} perd ${n} PV (${Math.max(0,t.pv)}/${t.pv0}).`,'good');
  if(t.pv<=0)kill(t,src);
  else if(t.kind==='lumivore'&&!G.phase2&&t.pv<=t.pv0/2){G.phase2=true;G.diving=true;log('Le Lumivore plonge dans le mycélium ! La clairière s’assombrit, des champignons poussent.','bad');
@@ -718,7 +718,7 @@ async function exportVideo(){
 /* Accès pour les tests automatisés : joue une partie complète sans affichage */
 window.PG_HEADLESS=function(cfg,route){const keep=G;SIM.forceRoute=route||null;SIM.silent=true;SIM.auto=true;SIM.noSnap=true;newGame(cfg);let n=0;while(aiStep()&&n<5000)n++;
  const r={over:G.over||'bloque',cause:G.over==='victoire'?'':(alive('h').length?'lanterne':'heros'),charge:Math.max(0,G.charge),route:G.visited.t6?'detour':'raccourci',last:G.tile,
-  down:heroes().filter((h)=>h.down).length,items:G.stats.items.length,secrets:G.stats.secrets,fights:G.stats.fights.map((f)=>[f.tile,f.rounds]),actions:n};
+  down:heroes().filter((h)=>h.down).length,minR:G.stats.minR??1,close:G.stats.close||0,dmg:G.stats.dmgTaken||0,potions:heroes().reduce((a,h)=>a+(h.bag.includes('soin')?0:1),0),items:G.stats.items.length,secrets:G.stats.secrets,fights:G.stats.fights.map((f)=>[f.tile,f.rounds]),actions:n};
  SIM.silent=false;SIM.auto=false;SIM.noSnap=false;SIM.forceRoute=null;G=keep;return r;};
 function showSummary(){
  const win=G.over==='victoire';const hs=heroes();const st=G.stats;
