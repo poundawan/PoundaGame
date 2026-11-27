@@ -454,7 +454,7 @@ function clickCell(x,y){
  if(G.over)return;const P=G.pending;
  if(!P){const u=unitAt(x,y);if(u&&u.side==='h'&&G.mode==='explore'){G.sel=u.id;render();}return;}
  const h=curHero();
- if(P.type==='move'){const k=key(x,y);if(!P.cells.has(k))return;h.x=x;h.y=y;G.acts--;h.moved=true;G.pending=null;afterAction();return;}
+ if(P.type==='move'){const k=key(x,y);if(!P.cells.has(k))return;h.x=x;h.y=y;G.pending=null;if(G.mode==='combat'){G.acts--;h.moved=true;afterAction();}else render();return;}
  const match=P.targets.find((t)=>Array.isArray(t)?(t[0]===x&&t[1]===y):cellsOf(t).some(([a,b])=>a===x&&b===y));
  if(!match)return;G.pending=null;
  if(P.type==='spell')castSpell(h,P.sid,match);else if(P.type==='fam')famMission(h,match);}
@@ -531,7 +531,8 @@ function drawActive(){
   h.bag.forEach((it,i)=>{a+=btn('Utiliser : '+ITEMS[it],'1 action','item:'+it,G.acts<1);});
   a+=btn('Finir le tour','','end',false,'main');}
  else{
-  s+=`<p class="hint">Exploration : chaque héros a <b>1 action libre</b> par tour. ${h.free?'':'(déjà utilisée)'}</p>`;
+  s+=`<p class="hint">Exploration : déplace-toi librement sur la tuile, et chaque héros a <b>1 action libre</b> par tour. ${h.free?'':'(déjà utilisée)'} Clique un héros dans « Le groupe » ou sur le plateau pour le sélectionner.</p>`;
+  a+=btn('Se déplacer',`${h.mv} cases · gratuit, autant que tu veux`,'move',false);
   const pts=searchPoints();a+=btn('Fouiller',pts.length?'test d’Instinct'+(h.race==='humain'?' +1':''):'aucun point de fouille','search',!h.free||!pts.length);
   if(h.fam==='gecko')a+=btn('Mission : Gecko','fouille à distance','gecko',!h.free||!pts.length);
   if(h.fam==='hibou')Object.keys(tile().exits).forEach((dd)=>{if(tile().hidden&&!G.altar)return;a+=btn('Hibou : vigie '+DIRN[dd],'ce qui attend là-bas','peek:'+dd,!h.free);});
