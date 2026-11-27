@@ -423,8 +423,8 @@ function introParas(hs){
  'Pendant des siècles, on a essayé. Des torches, des cordes, des masques. Dans la brume, on ne voyait plus rien. Et ceux qui allaient trop loin ne respiraient plus.',
  'Puis vint Lugdon, la cité des deux fleuves. Sur la Colline des Sages vivent ses mages ; sur la Colline des Savants, ses ingénieurs. Pour la première fois, les deux collines ont travaillé ensemble. Elles ont réussi l’impossible : capturer une lumière et la lier à l’air lui-même. Partout où elle brille, on voit, et on respire. Ils l’ont appelée le Lumignon.',
  'Ce soir, toute la ville s’est rassemblée à la Lisière, là où commence le Voile le plus proche. Depuis plusieurs nuits, une lueur dorée brille au loin, dans la brume, là où aucune lumière ne devrait exister.',
- `Vous êtes ${NB[n]||n}, ${list} : les premiers Explorateurs. Le grand Lumignon s’élève au-dessus de vos têtes, et chacun de vous porte son lumignon de poche.`,
- 'Votre mission : entrer dans la Lisière, atteindre cette lumière, et revenir raconter ce que vous avez vu.'];}
+ `Vous êtes ${NB[n]||n}, les premiers Explorateurs. Le grand Lumignon s’élève au-dessus de vos têtes, et chacun de vous porte son lumignon de poche.`,
+ 'Votre mission est une reconnaissance. Enfoncez-vous dans la Lisière, repérez ses chemins, ses ressources et ses dangers, et découvrez d’où vient cette lueur. Ce que vous rapporterez permettra à Lugdon de préparer une expédition bien plus grande : trouver un lieu où bâtir le premier avant-poste au cœur du Voile.'];}
 function showIntro(go){
  const ps=introParas(heroes());
  $('dialog').innerHTML=`<h2>${esc(ps[0])}</h2>`+ps.slice(1).map((p,i)=>`<p class="${i===ps.length-3?'':'hint'}" style="font-size:16px;line-height:1.6;color:${i>=ps.length-3?'var(--ink)':'#cfe3d6'}">${esc(p)}</p>`).join('')+
