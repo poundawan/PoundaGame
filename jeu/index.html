@@ -117,7 +117,7 @@ const TILES={
   story:'Des murs couverts de lierre. Au centre, un autel éteint. Des chenilles luisantes sortent des fissures !'},
  t5:{name:'Saulaie brumeuse',role:'Raccourci · brume épaisse',g:['TTTTTTTT','TD..S.DT','T.T.DT.T','T.D.P...','TF..D...','T.T.DT.T','TD....DT','TTT..TTT'],exits:{E:'t7'},brume:true,fight:'saulaie',
   secret:{nom:'la Racine-Mère',niveau:10,danger:'☠☠☠☠☠'},story:'La brume est si épaisse que la lanterne peine. Des racines partout, et des battements d’ailes au-dessus.'},
- t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T.V.K..T','..L..V.T','...K..LT','T......T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
+ t6:{name:'Champignonnière aux fleurs-lanternes',role:'Détour',g:['TTT..TTT','T.K..L.T','T...K..T','..L..V.T','......LT','T......T','TL....PT','TTTTTTTT'],exits:{N:'t7'},fight:'champi',
   story:'Des champignons géants, des spores dorées… et des fleurs qui brillent comme de petites lanternes.'},
  t7:{name:'Clairière du Lumivore',role:'Boss',g:['TTTTTTTT','TOOOOOOT','TOGZZOOT','..DZZD.T','..D..D.T','T.*..*.T','TF....FT','TTT..TTT'],exits:{},fight:'boss',
   story:'Une lumière dorée flotte au-dessus de la mare. Ce n’est pas une lanterne. La mare remue.'}
@@ -259,8 +259,8 @@ function enterTile(id,side){
   for(let i=0;i<5;i++){const p=pick();spawn('chenille',p[0],p[1]);}const p=pick();spawn('phalene',p[0],p[1]);}
  if(T.fight==='saulaie'){const S=[];T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='S')S.push([x,y]);}));spawn('phalene',S[0][0],S[0][1]);
   for(let i=1;i<(TUNE.sauleP??2);i++){const p=far(1)[0];if(p)spawn('phalene',p[0],p[1]);}for(let i=0;i<(TUNE.sauleC??0);i++){const p=far(1)[0];if(p)spawn('chenille',p[0],p[1]);}}
- if(T.fight==='champi'){let nk=0,nv=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='K'&&nk++<(TUNE.champK??4))spawn('cracheur',x,y);if(c==='V'&&nv++<(TUNE.champV??3))spawn('vesse',x,y);}));
-  if(Math.random()<(TUNE.blairP??0.5)){const p=far(1)[0];spawn('blaireau',p[0],p[1]);log('Le sol se soulève : le Blaireau des souches surgit !','bad');}}
+ if(T.fight==='champi'){let nk=0,nv=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='K'&&nk++<(TUNE.champK??2))spawn('cracheur',x,y);if(c==='V'&&nv++<(TUNE.champV??1))spawn('vesse',x,y);}));
+  if(Math.random()<(TUNE.blairP??1)){const p=far(1)[0];spawn('blaireau',p[0],p[1]);log('Le sol se soulève : le Blaireau des souches surgit !','bad');}}
  if(T.fight==='boss'){let zx=9,zy=9,gx=0,gy=0;T.g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='Z'&&zx===9){zx=x;zy=y;}if(c==='G'){gx=x;gy=y;}}));
   spawn('lumivore',zx,zy);spawn('leurre',gx,gy);G.phase2=false;G.diving=false;G.dark=0;}
  if(alive('c').length)startCombat();else{G.mode='explore';heroes().forEach((h)=>{h.free=true;});}}
