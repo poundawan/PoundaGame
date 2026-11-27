@@ -414,13 +414,13 @@ function gainItem(it,h,why){if(!it||!h)return;G.stats.items.push(ITEMS[it]);
  if(it==='cristal'){G.charge+=2;log(`${why} un Cristal de lumière : +2 charges.`,'good');return;}
  if(EQUIP.includes(it)){h.eq.push(it);if(it==='talisman')h.def++;if(it==='pierre')h.mai++;if(it==='bourse'){h.e0++;h.e++;}if(it==='bottes')h.mv++;log(`${why} : ${ITEMS[it]}, équipé par ${h.name}.`,'good');return;}
  const taker=[h].concat(alive('h')).find((u)=>u.bag.length<3);if(taker){taker.bag.push(it);log(`${why} : ${ITEMS[it]} (dans le sac de ${taker.name}).`,'good');}else log(`${why} : ${ITEMS[it]}, mais les sacs sont pleins.`,'');}
-function searchPoints(){const pts=[];tile().g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='P')pts.push([x,y]);}));return pts.filter(([x,y])=>!G.searched[G.tile+key(x,y)]);}
+function searchPoints(who){const pts=[];tile().g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='P')pts.push([x,y]);}));return pts.filter(([x,y])=>!G.searched[G.tile+key(x,y)]&&!(who&&G.tried&&G.tried[G.tile+key(x,y)+'|'+who]));}
 function doSearch(h,viaFam){
- const pts=searchPoints();if(!pts.length)return;const[x,y]=pts[0];h.free=false;
+ const who=viaFam?'g'+h.id:h.id;const pts=searchPoints(who);if(!pts.length)return;const[x,y]=pts[0];G.tried=G.tried||{};G.tried[G.tile+key(x,y)+'|'+who]=true;
  const bonus=h.race==='humain'?1:0;
  if(roll(h.inst+bonus,`Fouille de ${viaFam?'son Gecko pour ':''}${h.name}`)){G.searched[G.tile+key(x,y)]=true;
   if(G.tile==='t1'){log(tile().clue,'story');}else gainItem(drawCard(),h,'Trouvé');}
- else log('Rien… mais on peut réessayer au prochain tour.','');render();}
+ else log(`Rien pour ${viaFam?'le Gecko de ':''}${h.name}. Un autre membre du groupe peut tenter sa chance ici.`,'');render();}
 function useItem(h,it){const i=h.bag.indexOf(it);if(i<0)return;h.bag.splice(i,1);
  if(it==='soin'){h.pv=Math.min(h.pv0,h.pv+6);log(`${h.name} boit une potion de soin (+6 PV).`,'good');}
  if(it==='souffle'){h.e=h.e0;log(`${h.name} boit une potion de second souffle : Éclats au maximum.`,'good');}
@@ -432,7 +432,7 @@ function useItem(h,it){const i=h.bag.indexOf(it);if(i<0)return;h.bag.splice(i,1)
 function advance(dir){
  const T=tile();const to=T.exits[dir];if(!to)return;
  const cost=1+((TILES[to].brume||T.brume)?1:0);G.charge-=cost;
- alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.free=true;});
+ alive('h').forEach((h)=>{h.free=true;});
  log(`Le groupe part vers le ${DIRN[dir]} (−${cost} charge${cost>1?'s':''}).`,'');
  if(checkEnd())return render();enterTile(to,OPP[dir]);if(!checkEnd())render();else render();}
 function rest(){G.charge--;alive('h').forEach((h)=>{h.e=Math.min(h.e0,h.e+1);h.free=true;});log('Le groupe se repose un tour : +1 Éclat chacun, −1 charge.','');checkEnd();render();}
@@ -531,21 +531,21 @@ function drawActive(){
   h.bag.forEach((it,i)=>{a+=btn('Utiliser : '+ITEMS[it],'1 action','item:'+it,G.acts<1);});
   a+=btn('Finir le tour','','end',false,'main');}
  else{
-  s+=`<p class="hint">Exploration : déplace-toi librement sur la tuile, et chaque héros a <b>1 action libre</b> par tour. ${h.free?'':'(déjà utilisée)'} Clique un héros dans « Le groupe » ou sur le plateau pour le sélectionner.</p>`;
+  s+=`<p class="hint">Exploration : pas de tours, actions illimitées. Chaque héros ne fouille qu’une fois chaque point de fouille. Les Éclats ne reviennent qu’en se reposant. Clique un héros dans « Le groupe » ou sur le plateau pour le sélectionner.</p>`;
   a+=btn('Se déplacer',`${h.mv} cases · gratuit, autant que tu veux`,'move',false);
-  const pts=searchPoints();a+=btn('Fouiller',pts.length?'test d’Instinct'+(h.race==='humain'?' +1':''):'aucun point de fouille','search',!h.free||!pts.length);
-  if(h.fam==='gecko')a+=btn('Mission : Gecko','fouille à distance','gecko',!h.free||!pts.length);
-  if(h.fam==='hibou')Object.keys(tile().exits).forEach((dd)=>{if(tile().hidden&&!G.altar)return;a+=btn('Hibou : vigie '+DIRN[dd],'ce qui attend là-bas','peek:'+dd,!h.free);});
-  if(tile().g.some((r)=>r.includes('A'))&&!(G.tile==='t4'&&G.altar)&&!(G.tile==='t1'&&G.altarT1))a+=btn('Interagir avec '+(G.tile==='t1'?'la borne':'l’autel'),'','altar',!h.free);
-  if(G.tile==='t6'&&G.flowers<4)a+=btn('Cueillir une fleur-lanterne',`+2 charges (${4-G.flowers} restantes)`,'flower',!h.free);
-  if(h.cls==='tisseur')a+=btn('Lien de vie (1💎)','soigne d6 un allié','heal',!h.free||h.e<1);
-  h.bag.forEach((it)=>{a+=btn('Utiliser : '+ITEMS[it],'',('item:'+it),!h.free);});}
+  const pts=searchPoints(h.id);const all=searchPoints();a+=btn('Fouiller',pts.length?'test d’Instinct'+(h.race==='humain'?' +1':'')+' · une seule tentative':(all.length?'déjà tenté ici':'aucun point de fouille'),'search',!pts.length);
+  if(h.fam==='gecko'){const gp=searchPoints('g'+h.id);a+=btn('Mission : Gecko','fouille à distance · sa propre tentative','gecko',!gp.length);}
+  if(h.fam==='hibou')Object.keys(tile().exits).forEach((dd)=>{if(tile().hidden&&!G.altar)return;a+=btn('Hibou : vigie '+DIRN[dd],'ce qui attend là-bas','peek:'+dd,false);});
+  if(tile().g.some((r)=>r.includes('A'))&&!(G.tile==='t4'&&G.altar)&&!(G.tile==='t1'&&G.altarT1))a+=btn('Interagir avec '+(G.tile==='t1'?'la borne':'l’autel'),'','altar',false);
+  if(G.tile==='t6'&&G.flowers<4)a+=btn('Cueillir une fleur-lanterne',`+2 charges (${4-G.flowers} restantes)`,'flower',false);
+  if(h.cls==='tisseur')a+=btn('Lien de vie (1💎)','soigne d6 un allié','heal',h.e<1);
+  h.bag.forEach((it)=>{a+=btn('Utiliser : '+ITEMS[it],'',('item:'+it),false);});}
  $('active').innerHTML=s+`<div class="acts">${a}</div>`+(G.mode==='explore'?groupActions():'');}
 function groupActions(){const T=tile();let a='';
  const ex=Object.keys(T.exits).filter((dd)=>!(T.hidden&&!G.altar));
- ex.forEach((dd)=>{const to=TILES[T.exits[dd]];const cost=1+((to.brume||T.brume)?1:0);a+=btn(`Partir vers le ${DIRN[dd]}`,`−${cost} charge · +1 Éclat chacun`,'go:'+dd,false,'main');});
+ ex.forEach((dd)=>{const to=TILES[T.exits[dd]];const cost=1+((to.brume||T.brume)?1:0);a+=btn(`Partir vers le ${DIRN[dd]}`,`−${cost} charge${cost>1?'s':''}`,'go:'+dd,false,'main');});
  if(T.hidden&&!G.altar)a+=`<p class="hint">Les sorties de ces ruines sont cachées. Interagissez avec l’autel (!).</p>`;
- a+=btn('Se reposer un tour','−1 charge · +1 Éclat chacun · actions libres rendues','rest');
+ a+=btn('Se reposer un tour','−1 charge · +1 Éclat chacun (seul moyen de regagner des Éclats en exploration)','rest');
  if(G.peek)a+=`<p class="hint">${esc(G.peek)}</p>`;
  return `<h3 style="margin-top:12px">Le groupe</h3><div class="acts">${a}</div>`;}
 function famTargets(h){const F=h.fam;
@@ -607,19 +607,19 @@ function aiCombatStep(){
  nextHero();render();}
 function aiExploreStep(){
  const T=tile();const hs=alive('h');
- for(const h of hs){if(!h.free)continue;
-  if(searchPoints().length&&!h.aiSearched){h.aiSearched=G.tile;doSearch(h,false);return;}
+ for(const h of hs){
+  if(searchPoints(h.id).length){doSearch(h,false);return;}
+  if(h.fam==='gecko'&&searchPoints('g'+h.id).length){doSearch(h,true);return;}
   if(T.g.some((r)=>r.includes('A'))&&((G.tile==='t4'&&!G.altar)||(G.tile==='t1'&&!G.altarT1))){G.sel=h.id;const b={dataset:{act:'altar'}};h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois.','story');}else{G.altar=true;log('L’autel s’éveille : deux chemins apparaissent, au nord et à l’est.','story');}render();return;}
   if(G.tile==='t6'&&G.flowers<4){h.free=false;G.flowers++;G.charge+=2;log(`${h.name} cueille une fleur-lanterne : +2 charges.`,'good');render();return;}
   if(h.cls==='tisseur'&&h.e>=1){const t=hs.filter((u)=>u.pv<=0.7*u.pv0).sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];if(t){h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}}
   if(h.pv<=0.5*h.pv0&&h.bag.includes('seve')){useItem(h,'seve');return;}
   if(h.race==='humain'&&h.bag.includes('curio')){useItem(h,'curio');return;}}
- hs.forEach((h)=>{if(h.aiSearched!==G.tile)h.aiSearched=null;});
  const ex=Object.keys(T.exits);if(!ex.length)return;
  const avgE=hs.reduce((a,h)=>a+h.e/h.e0,0)/hs.length;
- if((G.tile==='t5'||G.tile==='t6')&&avgE<0.75&&G.charge>16&&(G.aiRest||0)<3){G.aiRest=(G.aiRest||0)+1;rest();return;}
+ if(avgE<0.6&&G.charge>(G.tile==='t5'||G.tile==='t6'?14:20)&&(G.aiRest||0)<3){G.aiRest=(G.aiRest||0)+1;rest();return;}
  let dir=ex[0];if(ex.length>1){const ok=hs.length>=4&&hs.every((h)=>h.pv>=0.6*h.pv0)&&G.charge>=18;dir=ok?'E':'N';log(ok?'Le groupe se sent fort : il prend le détour par la champignonnière.':'Le groupe préfère le raccourci par la saulaie.','story');}
- G.aiRest=0;hs.forEach((h)=>{h.aiSearched=null;});advance(dir);}
+ G.aiRest=0;advance(dir);}
 function aiStep(){if(!G||G.over)return false;
  if(G.mode==='combat'){const h=curHero();if(h&&h.id!==SIM.lastHero){SIM.lastHero=h.id;h.aiMoved=false;}aiCombatStep();}else aiExploreStep();
  snap();return !G.over;}
