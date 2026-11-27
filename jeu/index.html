@@ -71,6 +71,11 @@ select,input{background:var(--panel2);border:1px solid var(--line);border-radius
 .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin:8px 4px 0}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.simbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px max(16px,3vw);background:#1b2f25;border-bottom:1px solid var(--line)}
+.simbar input[type=range]{flex:1 1 200px;accent-color:#f2c14b;padding:0;border:0;background:none}
+.simbar .lab{font-size:13px;color:var(--muted);white-space:nowrap}
+.sumt{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.sumt td,.sumt th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 .tip{font-size:13px;color:var(--gold2);min-height:20px;margin:6px 4px 0}
 @media(prefers-reduced-motion:reduce){.lbar>div{transition:none}}
 </style>
@@ -82,6 +87,7 @@ select,input{background:var(--panel2);border:1px solid var(--line);border-radius
 <span class="pill" id="mode">Exploration</span>
 <button class="btn" id="newgame" type="button">Nouvelle partie</button>
 </header>
+<div class="simbar" id="simbar" hidden></div>
 <div class="main">
 <section class="boardwrap">
 <div class="boardhead"><h2 id="tilename">—</h2><span class="pill" id="tilerole">—</span></div>
@@ -171,7 +177,7 @@ const esc=(s)=>String(s).replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&
 const d=(n)=>1+Math.floor(Math.random()*n);
 const man=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 const key=(x,y)=>x+','+y;
-function log(t,cls){G.log.push({t,cls:cls||''});if(G.log.length>220)G.log.shift();}
+function log(t,cls){G.log.push({t,cls:cls||''});}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const tile=()=>TILES[G.tile];
 const cell=(x,y)=>(x<0||y<0||x>7||y>7)?'#':tile().g[y][x];
@@ -211,7 +217,7 @@ function roll(score,label){const r=d(20);const ok=r===1||(r!==20&&r<=score);log(
 function newGame(cfg){
  const n=cfg.length;
  G={tile:'t1',from:null,mode:'explore',round:0,charge:30,log:[],units:[],order:[],turn:0,acts:0,sel:null,pending:null,deck:shuffle(DECK0.slice()),searched:{},flowers:0,
-  armor:{},force:{},illum:{},traps:[],blocks:[],dark:0,phase2:false,diving:false,visited:{},carnet:[],xp:{},altar:false,over:null,chest:false,peek:null,uid:1};
+  armor:{},force:{},illum:{},traps:[],blocks:[],dark:0,phase2:false,diving:false,visited:{},carnet:[],xp:{},altar:false,over:null,chest:false,peek:null,uid:1,stats:{tiles:[],fights:[],kills:{},items:[],secrets:0}};
  cfg.forEach((h,i)=>{const C=CLASSES[h.cls];const duo=n===2;
   const u={id:'h'+i,side:'h',name:h.name||('Héros '+(i+1)),race:h.race,cls:h.cls,fam:h.fam,pv0:C.pv+(duo?3:0),def:C.def,mai:C.mai,e0:C.ecl,inst:C.inst,
    mv:h.race==='oiseau'?4:3,dmgb:duo?1:0,bag:['soin','souffle'],eq:[],x:0,y:0,down:false,free:true,atout:0,famRound:-1,famRest:-1,
@@ -234,13 +240,14 @@ function spawn(kind,x,y){const n=heroes().length;const C=CRE[kind];const f=C.bos
 function freeCells(pred){const out=[];for(let y=0;y<8;y++)for(let x=0;x<8;x++){const ch=cell(x,y);if(solid(ch)||'OZ'.includes(ch))continue;if(unitAt(x,y))continue;if(pred&&!pred(x,y,ch))continue;out.push([x,y]);}return out;}
 function far(n){const hs=alive('h');return shuffle(freeCells((x,y)=>hs.every((h)=>Math.abs(h.x-x)+Math.abs(h.y-y)>=4))).slice(0,n);}
 function enterTile(id,side){
+ if(G.stats){const L=G.stats.tiles[G.stats.tiles.length-1];if(L)L.out=G.charge;G.stats.tiles.push({id,inn:G.charge,out:null});}
  G.units=G.units.filter((u)=>u.side==='h');G.tile=id;G.from=side;G.blocks=[];G.traps=[];G.peek=null;
  const T=TILES[id];placeHeroes(side);G.visited[id]=true;
  log(`— ${T.name} —`,'');log(T.story,'story');
  if(T.secret){const ast=alive('h').some((h)=>h.race==='astreen');
-  if(ast){log(`L’Astréen lit une constellation cachée : ${T.secret.nom} (passage secret, niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);}
+  if(ast){log(`L’Astréen lit une constellation cachée : ${T.secret.nom} (passage secret, niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);G.stats.secrets++;}
   else{const hs=alive('h');const f=hs.find((h)=>h.fam);log(`Le ${FAMS[f.fam].n} de ${f.name} flaire quelque chose… Chacun tente un test d’Instinct Difficile (−3).`,'story');
-   if(hs.some((h)=>roll(h.inst-3,'Instinct de '+h.name))){log(`Secret découvert : ${T.secret.nom} (niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);}
+   if(hs.some((h)=>roll(h.inst-3,'Instinct de '+h.name))){log(`Secret découvert : ${T.secret.nom} (niveau ${T.secret.niveau} ${T.secret.danger}). Noté dans le Carnet.`,'good');G.carnet.push(T.secret);G.stats.secrets++;}
    else log('Rien de plus… pour cette fois.','');}}
  let foes=[];
  if(T.event==='chenilles'&&Math.random()<0.5){log('Les fougères s’agitent : trois Chenilles de lueur !','bad');foes=far(3).map(([x,y])=>spawn('chenille',x,y));}
@@ -259,7 +266,7 @@ function startCombat(){
  G.mode='combat';G.round=1;G.armor={};G.force={};G.illum={};
  const hs=alive('h');hs.forEach((h)=>{h.atout=0;h.famRest=-1;h.famRound=-1;h.ini=d(6);h.riposte=false;h.light=0;h.dodge=false;h.immune=false;h.hitb=0;h.dmgx=false;});
  hs.sort((a,b)=>a.ini-b.ini||b.inst-a.inst||b.mai-a.mai||b.pv-a.pv);
- G.order=hs.map((h)=>h.id);log('Combat ! Initiative au d6 : '+hs.map((h)=>`${h.name} ${h.ini}`).join(', ')+'.','bad');
+ G.order=hs.map((h)=>h.id);G.stats.fights.push({tile:G.tile,foes:alive('c').map((c)=>c.name),rounds:0,down:0});log('Combat ! Initiative au d6 : '+hs.map((h)=>`${h.name} ${h.ini}`).join(', ')+'.','bad');
  G.turn=-1;nextHero();}
 function curHero(){return G.mode==='combat'?byId(G.order[G.turn]):byId(G.sel);}
 function nextHero(){
@@ -284,7 +291,7 @@ function hurt(t,n,src){
  else if(t.kind==='lumivore'&&!G.phase2&&t.pv<=t.pv0/2){G.phase2=true;G.diving=true;log('Le Lumivore plonge dans le mycélium ! La clairière s’assombrit, des champignons poussent.','bad');
   G.dark=2;tile().g.forEach((r,y)=>[...r].forEach((c,x)=>{if(c==='*'&&!unitAt(x,y))spawn('cracheur',x,y);}));}}
 function kill(t,src){t.pv=0;log(`${t.name} est vaincu.`,'good');
- if(src&&src.side==='h')G.xp[src.id]+=CRE[t.kind].xp;
+ if(src&&src.side==='h'){G.xp[src.id]+=CRE[t.kind].xp;G.stats.kills[src.id]=(G.stats.kills[src.id]||0)+1;}
  if(t.kind==='vesse'){log('La Vesse-de-loup explose !','bad');const dmg=d(6);G.units.filter((u)=>u!==t&&u.pv>0&&!u.down&&dist(u,t)===1).forEach((u)=>hurt(u,dmg,null));}
  if(t.kind==='blaireau')gainItem(drawEquip(),src&&src.side==='h'?src:alive('h')[0],'Le Blaireau laisse');
  if(t.kind==='leurre')log('Le leurre s’éteint : le Lumivore ne peut plus voler votre lumière.','good');
@@ -294,12 +301,12 @@ function kill(t,src){t.pv=0;log(`${t.name} est vaincu.`,'good');
  checkEnd();}
 function checkEnd(){
  if(!alive('h').length){G.over='defaite';log('Tous les héros sont à terre. La mission échoue.','bad');return true;}
- if(G.charge<=0){G.charge=0;G.over='defaite';log('La lanterne s’éteint. Les héros battent en retraite.','bad');return true;}
+ if(G.charge<=0){G.charge=0;const F=G.stats&&G.mode==='combat'?G.stats.fights[G.stats.fights.length-1]:null;if(F&&!F.rounds)F.rounds=G.round;G.over='defaite';log('La lanterne s’éteint. Les héros battent en retraite.','bad');return true;}
  if(G.mode==='combat'&&!alive('c').length){
-  if(G.tile==='t7'){G.over='victoire';log('Le Lumivore est vaincu ! La lumière de la Lisière est sauvée.','good');return true;}
+  if(G.tile==='t7'){const F=G.stats.fights[G.stats.fights.length-1];if(F){F.rounds=G.round;F.down=heroes().filter((h)=>h.down).length;}G.over='victoire';log('Le Lumivore est vaincu ! La lumière de la Lisière est sauvée.','good');return true;}
   endCombat();return true;}
  return false;}
-function endCombat(){G.mode='explore';G.pending=null;G.dark=0;
+function endCombat(){const F=G.stats.fights[G.stats.fights.length-1];if(F){F.rounds=G.round;F.down=heroes().filter((h)=>h.down).length;}G.mode='explore';G.pending=null;G.dark=0;
  alive('h').forEach((h)=>{const g=Math.ceil(h.pv0/2);h.pv=Math.min(h.pv0,h.pv+g);h.free=true;h.malus=0;h.light=0;});
  log('Le combat est fini. Chaque héros debout reprend son souffle : +½ de ses PV.','good');
  if(G.tile==='t6'&&!G.chest){G.chest=true;gainItem(drawEquip(),alive('h')[0],'Sous un champignon, un coffre contient');}
@@ -403,7 +410,7 @@ function bossTurn(b,leurre){
 /* ================= Exploration ================= */
 function drawCard(){return G.deck.length?G.deck.pop():null;}
 function drawEquip(){const i=G.deck.findIndex((c)=>EQUIP.includes(c));return i>=0?G.deck.splice(i,1)[0]:null;}
-function gainItem(it,h,why){if(!it||!h)return;
+function gainItem(it,h,why){if(!it||!h)return;G.stats.items.push(ITEMS[it]);
  if(it==='cristal'){G.charge+=2;log(`${why} un Cristal de lumière : +2 charges.`,'good');return;}
  if(EQUIP.includes(it)){h.eq.push(it);if(it==='talisman')h.def++;if(it==='pierre')h.mai++;if(it==='bourse'){h.e0++;h.e++;}if(it==='bottes')h.mv++;log(`${why} : ${ITEMS[it]}, équipé par ${h.name}.`,'good');return;}
  const taker=[h].concat(alive('h')).find((u)=>u.bag.length<3);if(taker){taker.bag.push(it);log(`${why} : ${ITEMS[it]} (dans le sac de ${taker.name}).`,'good');}else log(`${why} : ${ITEMS[it]}, mais les sacs sont pleins.`,'');}
@@ -454,13 +461,13 @@ function clickCell(x,y){
 
 /* ================= Rendu ================= */
 function render(){
- if(!G)return;
+ if(!G||SIM.silent)return;
  $('lfill').style.width=Math.max(0,Math.min(100,G.charge/30*100))+'%';$('lnum').textContent=Math.max(0,G.charge);
  $('mode').textContent=G.mode==='combat'?`Combat · round ${G.round}`:'Exploration';
  const T=tile();$('tilename').textContent=T.name;$('tilerole').textContent=T.role+(T.brume?' · −1 charge':'');
  drawBoard();drawActive();drawRoster();drawFoes();
  $('log').innerHTML=G.log.slice().reverse().map((l)=>`<p class="${l.cls}">${esc(l.t)}</p>`).join('');
- if(G.over)showEnd();
+ if(G.over&&!SIM.auto&&!SIM.replay)showEnd();
  window.claude?.hot?.snapshot?.(()=>Object.assign({},G,{pending:null}));}
 function creatureSVG(u,px,py,S){
  const C=CRE[u.kind];const cx=px+S/2,cy=py+S/2;let s='';
@@ -508,6 +515,7 @@ function heroLine(h){return `${CLASSES[h.cls].n} · ${RACES[h.race].n} · ${FAMS
 function btn(label,sub,act,dis,cls){return `<button type="button" class="btn ${cls||''}" data-act="${esc(act)}" ${dis?'disabled':''}>${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</button>`;}
 function drawActive(){
  const h=curHero();if(!h){$('active').innerHTML='';return;}
+ if(SIM.auto||SIM.replay){$('active').innerHTML=`<h3>${esc(h.name)} <span class="mini">${esc(heroLine(h))}</span></h3><div class="stats"><span class="stat">❤️ ${h.pv}/${h.pv0}</span><span class="stat">🛡️ Déf ${h.def}</span><span class="stat">🎯 Maît ${h.mai}</span><span class="stat">💎 ${h.e}/${h.e0}</span><span class="stat">👣 ${h.mv}</span></div><p class="hint">${SIM.replay?'Replay : utilise la barre en haut pour avancer action par action.':'Simulation en cours : l’IA joue tous les héros.'}</p>`;return;}
  let s=`<h3>${esc(h.name)} <span class="mini">${esc(heroLine(h))}</span></h3>`;
  s+=`<div class="stats"><span class="stat">❤️ ${h.pv}/${h.pv0}</span><span class="stat">🛡️ Déf ${h.def}${Object.values(G.armor).includes(h.id)?'+2':''}</span><span class="stat">🎯 Maît ${h.mai}${h.malus?' −'+h.malus:''}</span><span class="stat">💎 ${h.e}/${h.e0}</span><span class="stat">👁️ Inst ${h.inst}</span><span class="stat">👣 ${h.mv+(h.light?1:0)}</span></div>`;
  s+=`<p class="hint">Talent : ${esc(RACES[h.race].t)}${h.eq.length?' · Équipement : '+esc(h.eq.map((e)=>ITEMS[e]).join(', ')):''}</p>`;
@@ -550,6 +558,101 @@ function drawRoster(){
 function drawFoes(){const cs=alive('c');
  $('foes').innerHTML=`<h3>${cs.length?'Créatures':'Aucune créature en vue'}</h3>`+cs.map((c)=>`<div class="hero"><span class="dot" style="background:${CRE[c.kind].c}"></span><div><b>${esc(c.name)}</b> <span class="mini">att ${c.att} · déf ${c.def} · d${c.dmg}${c.sleep?' · endormi':''}${c.stuck?' · immobilisé':''}</span><div class="hp"><div style="width:${100*c.pv/c.pv0}%;background:#e2675b"></div></div></div><span class="mini">${c.pv}/${c.pv0}</span></div>`).join('');}
 
+
+/* ================= IA, simulation et replay ================= */
+const SIM={auto:false,silent:false,replay:false,frames:[],timer:null,speed:450,paused:false,idx:0,fullLog:[]};
+function snap(){SIM.frames.push(JSON.stringify(Object.assign({},G,{pending:null,log:G.log.length})));}
+function bestAttack(h){ // meilleur sort offensif disponible : [sid, cible, valeur]
+ let best=null;
+ for(const sid of CLASSES[h.cls].sp){const S=SP[sid];if(h.e<S.c)continue;
+  if(!['foe','line','area','any'].includes(S.t))continue;if(sid==='lienvie')continue;
+  const ts=targetsFor(h,S,sid);
+  for(const t of ts){let v=0;
+   if(S.t==='area'){const[x,y]=t;let n=0;[[x,y],[x+1,y],[x,y+1],[x+1,y+1]].forEach(([a,b])=>{const u=unitAt(a,b);if(u&&u.side==='c')n++;});if(n<2)continue;v=n*2.5;}
+   else{if(t.side!=='c')continue;const sc=Math.max(1,Math.min(19,attackScore(h,t)))/20;v=sc*((S.d||4)/2+0.5+h.dmgb);if(t.pv<=(S.d||4))v+=1.5;if(t.kind==='leurre')v+=2;if(t.kind==='vesse'&&dist(h,t)===1)v-=3;
+    if(sid==='decharge'&&alive('c').some((o)=>o!==t&&dist(o,t)<=2))v*=1.8;if(sid==='lance'){const dx=Math.sign(t.x-h.x),dy=Math.sign(t.y-h.y);let n=0;for(let i=1;i<=2;i++){const u=unitAt(h.x+dx*i,h.y+dy*i);if(u&&u.side==='c')n++;}v*=n;}
+    if(sid==='marteau'&&t.kind!=='lumivore')v+=0.3;}
+   if(!best||v>best[2])best=[sid,t,v];}}
+ if(h.cls==='tisseur'&&h.e>=1){const ts=alive('c').filter((c)=>dist(h,c)<=4);ts.forEach((t)=>{const v=Math.max(1,attackScore(h,t))/20*3.5;if(!best||v>best[2])best=['lienvie',t,v];});}
+ return best;}
+function aiAtout(h){const F=h.fam;const maxA=h.race==='marque'?2:1;if(h.atout>=maxA)return false;
+ const near=alive('c').filter((c)=>dist(c,h)<=2).length;
+ if(F==='gecko'&&near>=2)return true;if(F==='tatou'&&h.pv<=0.5*h.pv0&&near>=1)return true;if(F==='lynx'&&h.pv<=0.6*h.pv0&&near>=1)return true;
+ if(F==='chacal'||F==='hibou')return alive('c').some((c)=>dist(c,h)<=6);if(F==='panda'&&h.e<=1)return true;return false;}
+function aiMoveCell(h){
+ const R=reach(h,h.mv+(h.light?1:0));const cs=alive('c').filter((c)=>!(c.kind==='lumivore'&&G.diving));if(!cs.length)return null;
+ const melee=['rempart','lamesort'].includes(h.cls);const range=melee?1:(h.cls==='passeombre'?2:Math.max(...CLASSES[h.cls].sp.map((x)=>SP[x].r).filter((r)=>r>1)));
+ let best=null,bv=1e9;R.forEach((c,k)=>{const[x,y]=k.split(',').map(Number);const p={x,y};const dmin=Math.min(...cs.map((u)=>dist(p,u)));
+  let v;if(melee)v=dmin*10+c;else{v=(dmin<=range?0:(dmin-range)*10)+(dmin<=1?6:0)-Math.min(dmin,range)+c*0.2;}
+  if(cell(x,y)==='F'&&!melee)v-=1;if(v<bv){bv=v;best=[x,y];}});
+ if(!best||(best[0]===h.x&&best[1]===h.y))return null;return best;}
+function aiCombatStep(){
+ const h=curHero();if(!h||h.down){nextHero();return;}
+ if(G.acts<=0){nextHero();return;}
+ if(aiAtout(h)){useAtout(h);return;}
+ if(h.pv<=0.4*h.pv0){const it=['soin','seve'].find((i)=>h.bag.includes(i));if(it){useItem(h,it);return;}}
+ if(h.e<=0){const it=['eclat'].find((i)=>h.bag.includes(i))||((G.tile==='t7'||alive('c').length>=4)&&h.bag.includes('souffle')?'souffle':null);if(it){useItem(h,it);return;}}
+ // soutiens
+ if(h.e>=1){
+  if(h.cls==='tisseur'){const hurtA=alive('h').filter((u)=>u.pv<=0.5*u.pv0&&dist(u,h)<=4).sort((a,b)=>a.pv-b.pv)[0];if(hurtA){castSpell(h,'lienvie',hurtA);return;}
+   if(!G.force[h.id]||!byId(G.force[h.id])||byId(G.force[h.id]).down){const al=alive('h').filter((u)=>u!==h&&dist(u,h)<=4).sort((a,b)=>CLASSES[b.cls].mai-CLASSES[a.cls].mai)[0];if(al&&alive('c').length>=2){castSpell(h,'lienforce',al);return;}}}
+  if(h.cls==='rempart'){const adj=alive('c').filter((c)=>dist(c,h)===1).length;if(adj>=2&&!h.riposte){castSpell(h,'riposte',h);return;}
+   if(!G.armor[h.id]||!byId(G.armor[h.id])||byId(G.armor[h.id]).down){const al=alive('h').filter((u)=>dist(u,h)<=1).sort((a,b)=>a.def-b.def)[0];if(al){castSpell(h,'armure',al);return;}}}
+  if(h.cls==='pisteur'&&!G.illum[h.id]){const big=alive('c').find((c)=>(c.kind==='blaireau'||c.kind==='lumivore')&&dist(c,h)<=6&&!G.diving);if(big){castSpell(h,'cible',big);return;}}}
+ const atk=bestAttack(h);if(atk&&atk[2]>0.2){castSpell(h,atk[0],atk[1]);return;}
+ const F=h.fam;if(['lynx','chacal','panda'].includes(F)&&h.famRound!==G.round&&h.famRest<G.round){const ts=famTargets(h);if(ts.length){const t=F==='panda'?ts.sort((a,b)=>b.att-a.att)[0]:ts.sort((a,b)=>a.pv-b.pv)[0];famMission(h,t);return;}}
+ if(!h.immune&&!h.aiMoved){const c=aiMoveCell(h);if(c){h.x=c[0];h.y=c[1];G.acts--;h.aiMoved=true;log(`${h.name} se déplace.`,'');afterAction();return;}}
+ nextHero();render();}
+function aiExploreStep(){
+ const T=tile();const hs=alive('h');
+ for(const h of hs){if(!h.free)continue;
+  if(searchPoints().length&&!h.aiSearched){h.aiSearched=G.tile;doSearch(h,false);return;}
+  if(T.g.some((r)=>r.includes('A'))&&((G.tile==='t4'&&!G.altar)||(G.tile==='t1'&&!G.altarT1))){G.sel=h.id;const b={dataset:{act:'altar'}};h.free=false;if(G.tile==='t1'){G.altarT1=true;log('La borne s’allume une dernière fois.','story');}else{G.altar=true;log('L’autel s’éveille : deux chemins apparaissent, au nord et à l’est.','story');}render();return;}
+  if(G.tile==='t6'&&G.flowers<4){h.free=false;G.flowers++;G.charge+=2;log(`${h.name} cueille une fleur-lanterne : +2 charges.`,'good');render();return;}
+  if(h.cls==='tisseur'&&h.e>=1){const t=hs.filter((u)=>u.pv<=0.7*u.pv0).sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];if(t){h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}}
+  if(h.pv<=0.5*h.pv0&&h.bag.includes('seve')){useItem(h,'seve');return;}
+  if(h.race==='humain'&&h.bag.includes('curio')){useItem(h,'curio');return;}}
+ hs.forEach((h)=>{if(h.aiSearched!==G.tile)h.aiSearched=null;});
+ const ex=Object.keys(T.exits);if(!ex.length)return;
+ const avgE=hs.reduce((a,h)=>a+h.e/h.e0,0)/hs.length;
+ if((G.tile==='t5'||G.tile==='t6')&&avgE<0.75&&G.charge>16&&(G.aiRest||0)<3){G.aiRest=(G.aiRest||0)+1;rest();return;}
+ let dir=ex[0];if(ex.length>1){const ok=hs.length>=4&&hs.every((h)=>h.pv>=0.6*h.pv0)&&G.charge>=18;dir=ok?'E':'N';log(ok?'Le groupe se sent fort : il prend le détour par la champignonnière.':'Le groupe préfère le raccourci par la saulaie.','story');}
+ G.aiRest=0;hs.forEach((h)=>{h.aiSearched=null;});advance(dir);}
+function aiStep(){if(!G||G.over)return false;
+ if(G.mode==='combat'){const h=curHero();if(h&&h.id!==SIM.lastHero){SIM.lastHero=h.id;h.aiMoved=false;}aiCombatStep();}else aiExploreStep();
+ snap();return !G.over;}
+function stopSim(){if(SIM.timer)clearTimeout(SIM.timer);SIM.timer=null;SIM.auto=false;SIM.silent=false;SIM.replay=false;$('simbar').hidden=true;}
+function startSim(cfg,fast){stopSim();SIM.frames=[];SIM.auto=true;SIM.paused=false;SIM.lastHero=null;
+ if(fast){SIM.silent=true;newGame(cfg);snap();let n=0;while(aiStep()&&n<4000)n++;if(!G.over){G.over='defaite';log('Simulation arrêtée : la partie traîne trop.','bad');}
+  SIM.silent=false;SIM.auto=false;render();showSummary();return;}
+ newGame(cfg);snap();simBar();loop();}
+function loop(){if(!SIM.auto)return;if(SIM.paused){SIM.timer=setTimeout(loop,200);return;}
+ const go=aiStep();render();simBar();if(go)SIM.timer=setTimeout(loop,SIM.speed);else{SIM.auto=false;$('simbar').hidden=true;render();showSummary();}}
+function simBar(){const b=$('simbar');b.hidden=false;
+ if(SIM.replay){b.innerHTML=`<span class="lab">Replay · action ${SIM.idx+1} / ${SIM.frames.length}</span><button class="btn" data-sb="first" type="button">⏮</button><button class="btn" data-sb="prev" type="button">◀</button><button class="btn" data-sb="play" type="button">${SIM.timer?'⏸ Pause':'▶ Lecture'}</button><button class="btn" data-sb="next" type="button">▶|</button><button class="btn" data-sb="last" type="button">⏭</button><input type="range" id="rpos" min="0" max="${SIM.frames.length-1}" value="${SIM.idx}" aria-label="Position dans le replay"><button class="btn" data-sb="quit" type="button">Quitter le replay</button>`;return;}
+ b.innerHTML=`<span class="lab">Simulation · ${SIM.frames.length} actions</span><button class="btn" data-sb="pause" type="button">${SIM.paused?'▶ Reprendre':'⏸ Pause'}</button><button class="btn ${SIM.speed>600?'on':''}" data-sb="slow" type="button">Lent</button><button class="btn ${SIM.speed===450?'on':''}" data-sb="norm" type="button">Normal</button><button class="btn ${SIM.speed<200?'on':''}" data-sb="fast" type="button">Rapide</button><button class="btn" data-sb="stop" type="button">Arrêter</button>`;}
+function showFrame(i){SIM.idx=Math.max(0,Math.min(SIM.frames.length-1,i));const f=JSON.parse(SIM.frames[SIM.idx]);f.log=SIM.fullLog.slice(0,f.log);G=f;render();simBar();}
+function startReplay(){if(!SIM.frames.length)return;SIM.fullLog=G.log.slice();SIM.replay=true;SIM.auto=false;SIM.timer=null;showFrame(0);}
+function replayPlay(){if(SIM.timer){clearTimeout(SIM.timer);SIM.timer=null;simBar();return;}const tick=()=>{if(!SIM.replay)return;if(SIM.idx>=SIM.frames.length-1){SIM.timer=null;simBar();return;}showFrame(SIM.idx+1);SIM.timer=setTimeout(tick,350);};SIM.timer=setTimeout(tick,0);simBar();}
+$('simbar').addEventListener('click',(ev)=>{const b=ev.target.closest('[data-sb]');if(!b)return;const a=b.dataset.sb;
+ if(a==='pause'){SIM.paused=!SIM.paused;simBar();}if(a==='slow')SIM.speed=900;if(a==='norm')SIM.speed=450;if(a==='fast')SIM.speed=120;if(['slow','norm','fast'].includes(a))simBar();
+ if(a==='stop'){SIM.auto=false;if(SIM.timer)clearTimeout(SIM.timer);SIM.timer=null;G.over=G.over||'arret';showSummary();}
+ if(a==='first')showFrame(0);if(a==='prev')showFrame(SIM.idx-1);if(a==='next')showFrame(SIM.idx+1);if(a==='last')showFrame(SIM.frames.length-1);if(a==='play')replayPlay();
+ if(a==='quit'){const last=SIM.frames.length-1;showFrame(last);stopSim();G.over=G.over||'arret';render();showSummary();}});
+$('simbar').addEventListener('input',(ev)=>{if(ev.target.id==='rpos'){if(SIM.timer){clearTimeout(SIM.timer);SIM.timer=null;}showFrame(+ev.target.value);}});
+function showSummary(){
+ const win=G.over==='victoire';const hs=heroes();const st=G.stats;
+ const L=st.tiles[st.tiles.length-1];if(L&&L.out==null)L.out=Math.max(0,G.charge);
+ const tileRows=st.tiles.map((t)=>{const f=st.fights.filter((x)=>x.tile===t.id);return `<tr><td>${esc(TILES[t.id].name)}</td><td>${t.inn} → ${t.out==null?'—':t.out}</td><td>${f.length?esc(f.map((x)=>x.rounds?x.rounds+' rounds':'en cours').join(', ')):'—'}</td><td>${f.length?esc([...new Set(f.flatMap((x)=>x.foes))].join(', ')):''}</td></tr>`;}).join('');
+ const heroRows=hs.map((h)=>`<tr><td>${esc(h.name)}</td><td>${esc(CLASSES[h.cls].n)}</td><td>${h.down?'à terre':'debout ('+h.pv+'/'+h.pv0+')'}</td><td>${st.kills[h.id]||0}</td><td>${G.xp[h.id]}</td></tr>`).join('');
+ $('dialog').innerHTML=`<h2>${win?'Victoire de la simulation':G.over==='arret'?'Simulation arrêtée':'La simulation échoue'}</h2>
+ <p class="hint">${SIM.frames.length} actions jouées · charges restantes : ${Math.max(0,G.charge)} · objets trouvés : ${st.items.length} · secrets découverts : ${st.secrets}</p>
+ <h3 style="margin-top:12px">Le parcours</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Tuile</th><th>Lanterne</th><th>Combats</th><th>Créatures</th></tr></thead><tbody>${tileRows}</tbody></table></div>
+ <h3 style="margin-top:12px">Les héros</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Héros</th><th>Classe</th><th>Fin</th><th>Créatures vaincues</th><th>XP combats</th></tr></thead><tbody>${heroRows}</tbody></table></div>
+ ${st.items.length?`<p class="hint">Objets : ${esc(st.items.join(', '))}</p>`:''}
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="rp2">Voir le replay action par action</button><button type="button" class="btn" id="again2">Nouvelle partie</button></div>`;
+ $('overlay').hidden=false;$('rp2').onclick=()=>{$('overlay').hidden=true;startReplay();};$('again2').onclick=()=>{stopSim();showSetup();};}
+
 /* ================= Écrans ================= */
 function showSetup(){
  const races=Object.keys(RACES),cls=Object.keys(CLASSES),fams=Object.keys(FAMS);
@@ -559,10 +662,13 @@ function showSetup(){
  $('dialog').innerHTML=`<h2>Préparer l’expédition</h2><p class="hint">Mission 1 de PoundaGame, version de test v0.2 : les règles figées de la bible, les dés lancés automatiquement. Tous les joueurs partagent cet écran.</p>
  <label style="display:flex;gap:10px;align-items:center;margin-top:10px">Nombre de héros <select id="nb" style="width:auto">${[2,3,4,5].map((n)=>`<option ${n===3?'selected':''}>${n}</option>`).join('')}</select></label>
  <div class="setup">${rows}</div><p class="hint">À 2 héros : +1 aux dégâts et +3 PV chacun. Chaque héros part avec 1 potion de soin et 1 potion de second souffle.</p>
- <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="go">Entrer dans le Voile</button></div>`;
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="go">Entrer dans le Voile</button><button type="button" class="btn" id="simfull">Simuler la partie<small>l’IA joue, tu regardes tout</small></button><button type="button" class="btn" id="simfast">Simulation rapide<small>résultat et résumé, puis replay</small></button></div>`;
  $('overlay').hidden=false;
  const upd=()=>{const n=+$('nb').value;for(let i=0;i<5;i++)$('row'+i).hidden=i>=n;};$('nb').onchange=upd;upd();
- $('go').onclick=()=>{const n=+$('nb').value;const cfg=[];for(let i=0;i<n;i++)cfg.push({name:$('nm'+i).value.trim()||('Héros '+(i+1)),race:$('ra'+i).value,cls:$('cl'+i).value,fam:$('fa'+i).value});$('overlay').hidden=true;newGame(cfg);};}
+ const cfgOf=()=>{const n=+$('nb').value;const cfg=[];for(let i=0;i<n;i++)cfg.push({name:$('nm'+i).value.trim()||('Héros '+(i+1)),race:$('ra'+i).value,cls:$('cl'+i).value,fam:$('fa'+i).value});return cfg;};
+ $('go').onclick=()=>{stopSim();$('overlay').hidden=true;newGame(cfgOf());};
+ $('simfull').onclick=()=>{$('overlay').hidden=true;startSim(cfgOf(),false);};
+ $('simfast').onclick=()=>{$('overlay').hidden=true;startSim(cfgOf(),true);};}
 function showEnd(){
  const win=G.over==='victoire';const hs=heroes();
  const rows=hs.map((h)=>{const xp=G.xp[h.id]+(win&&!h.down?10:0)+(win?Math.max(0,G.charge):0);return `<tr><td>${esc(h.name)}</td><td>${h.down?'à terre':'debout'}</td><td>${G.xp[h.id]}</td><td>${win&&!h.down?10:0}</td><td>${win?Math.max(0,G.charge):0}</td><td><b>${xp}</b></td></tr>`;}).join('');
@@ -570,11 +676,11 @@ function showEnd(){
  <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:14px"><thead><tr><th align="left">Héros</th><th align="left">État</th><th align="left">XP combats</th><th align="left">Mission</th><th align="left">Charges</th><th align="left">Total</th></tr></thead><tbody>${rows}</tbody></table></div>
  ${G.carnet.length?`<p class="hint">Carnet d’exploration : ${esc(G.carnet.map((c)=>c.nom+' (niveau '+c.niveau+' '+c.danger+')').join(' ; '))}</p>`:''}
  <p class="hint">XP provisoire : combats + 10 pour la mission réussie (héros debout) + 1 par charge restante.</p>
- <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="again">Rejouer</button></div>`;
- $('overlay').hidden=false;$('again').onclick=()=>{showSetup();};}
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="again">Nouvelle partie</button>${SIM.frames.length?'<button type="button" class="btn" id="rp">Voir le replay</button>':''}</div>`;
+ $('overlay').hidden=false;$('again').onclick=()=>{stopSim();showSetup();};if($('rp'))$('rp').onclick=()=>{$('overlay').hidden=true;startReplay();};}
 
 /* ================= Événements ================= */
-$('board').addEventListener('click',(ev)=>{const r=$('board').getBoundingClientRect();const sc=500/r.width;const x=Math.floor(((ev.clientX-r.left)*sc-10)/60),y=Math.floor(((ev.clientY-r.top)*sc-10)/60);if(x<0||y<0||x>7||y>7)return;clickCell(x,y);});
+$('board').addEventListener('click',(ev)=>{if(SIM.auto||SIM.replay)return;const r=$('board').getBoundingClientRect();const sc=500/r.width;const x=Math.floor(((ev.clientX-r.left)*sc-10)/60),y=Math.floor(((ev.clientY-r.top)*sc-10)/60);if(x<0||y<0||x>7||y>7)return;clickCell(x,y);});
 document.addEventListener('keydown',(ev)=>{if(ev.key==='Escape'&&G&&G.pending){G.pending=null;render();}});
 $('roster').addEventListener('click',(ev)=>{const el=ev.target.closest('[data-hero]');if(!el||!G||G.mode!=='explore')return;const h=byId(el.dataset.hero);if(h&&!h.down){G.sel=h.id;render();}});
 $('active').addEventListener('click',(ev)=>{const b=ev.target.closest('button[data-act]');if(!b||b.disabled||!G||G.over)return;const act=b.dataset.act;const h=curHero();
@@ -595,7 +701,7 @@ $('active').addEventListener('click',(ev)=>{const b=ev.target.closest('button[da
  if(act==='heal'){const t=alive('h').slice().sort((a,b)=>a.pv/a.pv0-b.pv/b.pv0)[0];h.e--;h.free=false;const v=d(6);t.pv=Math.min(t.pv0,t.pv+v);log(`${h.name} tisse un Lien de vie vers ${t.name} : +${v} PV.`,'good');render();return;}
  if(act.startsWith('go:')){advance(act.slice(3));return;}
  if(act==='rest'){rest();return;}});
-$('newgame').onclick=showSetup;
+$('newgame').onclick=()=>{stopSim();showSetup();};
 $('legend').innerHTML=[['#2f5b3a','Arbre, rocher, mur : bloquent'],['#6fa25a','Fougères : −2 aux tirs contre toi'],['#8a6a45','Racines : 2 cases'],['#7fb8d6','Eau peu profonde : 2 cases'],['#3f7fa8','Eau profonde : infranchissable'],['#c9a24a','? Fouille'],['#f2c14b','Sortie / fleur ✿']].map(([c,t])=>`<span><i class="sw" style="background:${c}"></i>${t}</span>`).join('');
 function start(data){if(data&&data.units){G=data;render();}else showSetup();}
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
