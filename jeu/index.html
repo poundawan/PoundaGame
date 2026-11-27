@@ -563,7 +563,7 @@ function drawFoes(){const cs=alive('c');
 
 /* ================= IA, simulation et replay ================= */
 const SIM={auto:false,silent:false,replay:false,frames:[],timer:null,speed:450,paused:false,idx:0,fullLog:[]};
-function snap(){SIM.frames.push(JSON.stringify(Object.assign({},G,{pending:null,log:G.log.length})));}
+function snap(){if(SIM.noSnap)return;SIM.frames.push(JSON.stringify(Object.assign({},G,{pending:null,log:G.log.length})));}
 function bestAttack(h){ // meilleur sort offensif disponible : [sid, cible, valeur]
  let best=null;
  for(const sid of CLASSES[h.cls].sp){const S=SP[sid];if(h.e<S.c)continue;
@@ -618,7 +618,7 @@ function aiExploreStep(){
  const ex=Object.keys(T.exits);if(!ex.length)return;
  const avgE=hs.reduce((a,h)=>a+h.e/h.e0,0)/hs.length;
  if(avgE<0.6&&G.charge>(G.tile==='t5'||G.tile==='t6'?14:20)&&(G.aiRest||0)<3){G.aiRest=(G.aiRest||0)+1;rest();return;}
- let dir=ex[0];if(ex.length>1){const ok=hs.length>=4&&hs.every((h)=>h.pv>=0.6*h.pv0)&&G.charge>=18;dir=ok?'E':'N';log(ok?'Le groupe se sent fort : il prend le détour par la champignonnière.':'Le groupe préfère le raccourci par la saulaie.','story');}
+ let dir=ex[0];if(ex.length>1){const ok=SIM.forceRoute?SIM.forceRoute==='detour':(hs.length>=4&&hs.every((h)=>h.pv>=0.6*h.pv0)&&G.charge>=18);dir=ok?'E':'N';log(ok?'Le groupe se sent fort : il prend le détour par la champignonnière.':'Le groupe préfère le raccourci par la saulaie.','story');}
  G.aiRest=0;advance(dir);}
 function aiStep(){if(!G||G.over)return false;
  if(G.mode==='combat'){const h=curHero();if(h&&h.id!==SIM.lastHero){SIM.lastHero=h.id;h.aiMoved=false;}aiCombatStep();}else aiExploreStep();
@@ -709,6 +709,12 @@ async function exportVideo(){
  if(cl&&cl.use){try{const dl=await cl.use('downloads');if(!dl)fallback();else{await dl.save({filename,data:blob});log('Vidéo enregistrée.','good');}}catch(e){log(e&&e.code==='declined'?'Enregistrement de la vidéo annulé.':'La vidéo n’a pas pu être enregistrée ici ('+(e&&e.code||'erreur')+').','bad');}}
  else fallback();
  render();}
+
+/* Accès pour les tests automatisés : joue une partie complète sans affichage */
+window.PG_HEADLESS=function(cfg,route){const keep=G;SIM.forceRoute=route||null;SIM.silent=true;SIM.auto=true;SIM.noSnap=true;newGame(cfg);let n=0;while(aiStep()&&n<5000)n++;
+ const r={over:G.over||'bloque',cause:G.over==='victoire'?'':(alive('h').length?'lanterne':'heros'),charge:Math.max(0,G.charge),route:G.visited.t6?'detour':'raccourci',last:G.tile,
+  down:heroes().filter((h)=>h.down).length,items:G.stats.items.length,secrets:G.stats.secrets,fights:G.stats.fights.map((f)=>[f.tile,f.rounds]),actions:n};
+ SIM.silent=false;SIM.auto=false;SIM.noSnap=false;SIM.forceRoute=null;G=keep;return r;};
 function showSummary(){
  const win=G.over==='victoire';const hs=heroes();const st=G.stats;
  const L=st.tiles[st.tiles.length-1];if(L&&L.out==null)L.out=Math.max(0,G.charge);
