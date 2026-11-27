@@ -6,8 +6,8 @@ Le monde ne compte pas qu'un seul Voile. Comme il existe plusieurs mers et plusi
 
 ## Introduction (lue par l'application ; « Vous êtes N » s'adapte au nombre d'Explorateurs)
 
-+names[names.length-1]:names[0];
- return [
+Les Voiles ont toujours été là.
+
 
 Bien avant les premières cités et les premières légendes, ces mers de brume recouvraient déjà des pans entiers du monde. Elles ne s’avancent pas, elles ne reculent pas. Elles sont là, au pied des montagnes et au bord des forêts, comme les océans bordent les côtes.
 
