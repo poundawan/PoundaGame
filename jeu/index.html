@@ -480,7 +480,9 @@ function creatureSVG(u,px,py,S){
  else if(u.kind==='lumivore'){const W=S*2;const bx=px,by=py;s=`<ellipse cx="${bx+W/2}" cy="${by+W/2+8}" rx="${W/2-6}" ry="${W/2-14}" fill="${G.diving?'#1c3329':C.c}" stroke="#a7d3b8" stroke-width="2"/>`+
   [0,1,2,3,4].map((i)=>`<circle cx="${bx+22+i*17}" cy="${by+W/2-12+(i%2)*6}" r="5" fill="#cfe9d8"/>`).join('')+`<ellipse cx="${bx+W/2-20}" cy="${by+W/2}" rx="7" ry="5" fill="#ffe08a"/><ellipse cx="${bx+W/2+20}" cy="${by+W/2}" rx="7" ry="5" fill="#ffe08a"/><path d="M${bx+22} ${by+W/2+20} q${W/2-22} 16 ${W-44} 0" stroke="#10251c" stroke-width="4" fill="none"/>`;}
  return s;}
-function drawBoard(){
+function drawBoard(){$('board').innerHTML=boardSVG();
+ $('tip').textContent=G.pending?(G.pending.type==='move'?'Clique une case dorée pour te déplacer (Échap pour annuler).':'Clique une cible encadrée (Échap pour annuler).'):'';}
+function boardSVG(){
  const S=60,P=10,W=8*S+2*P;const T=tile();const h=curHero();const P_=G.pending;let s=`<rect x="0" y="0" width="${W}" height="${W}" rx="12" fill="#22402e"/>`;
  T.g.forEach((row,y)=>[...row].forEach((ch,x)=>{const px=P+x*S,py=P+y*S;s+=`<rect x="${px}" y="${py}" width="${S}" height="${S}" fill="${COL[ch]||COL['.']}" stroke="rgba(0,0,0,.2)" data-x="${x}" data-y="${y}"/>`;
   if(ch==='T')s+=`<circle cx="${px+30}" cy="${py+30}" r="23" fill="#244a2e" pointer-events="none"/><circle cx="${px+24}" cy="${py+24}" r="13" fill="#3c7048" pointer-events="none"/>`;
@@ -509,8 +511,7 @@ function drawBoard(){
   else{const wB=u.big?2*S:S;s+=`<g pointer-events="none" opacity="${u.kind==='lumivore'&&G.diving?.45:1}">${creatureSVG(u,px,py,S)}`+(u.sleep?`<text x="${px+wB-12}" y="${py+16}" font-size="14" fill="#fff">z</text>`:'')+
    (Object.values(G.illum).includes(u.id)?`<circle cx="${px+wB/2}" cy="${py+wB/2}" r="${wB/2-4}" fill="none" stroke="#ffd97a" stroke-width="2" stroke-dasharray="3 3"/>`:'')+
    `<rect x="${px+8}" y="${py+wB-8}" width="${wB-16}" height="5" rx="2" fill="#3a2a28"/><rect x="${px+8}" y="${py+wB-8}" width="${(wB-16)*Math.max(0,u.pv)/u.pv0}" height="5" rx="2" fill="#e2675b"/></g>`;}});
- $('board').innerHTML=s;
- $('tip').textContent=G.pending?(G.pending.type==='move'?'Clique une case dorée pour te déplacer (Échap pour annuler).':'Clique une cible encadrée (Échap pour annuler).'):'';}
+ return s;}
 function heroLine(h){return `${CLASSES[h.cls].n} · ${RACES[h.race].n} · ${FAMS[h.fam].n}`;}
 function btn(label,sub,act,dis,cls){return `<button type="button" class="btn ${cls||''}" data-act="${esc(act)}" ${dis?'disabled':''}>${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</button>`;}
 function drawActive(){
@@ -629,7 +630,7 @@ function startSim(cfg,fast){stopSim();SIM.frames=[];SIM.auto=true;SIM.paused=fal
 function loop(){if(!SIM.auto)return;if(SIM.paused){SIM.timer=setTimeout(loop,200);return;}
  const go=aiStep();render();simBar();if(go)SIM.timer=setTimeout(loop,SIM.speed);else{SIM.auto=false;$('simbar').hidden=true;render();showSummary();}}
 function simBar(){const b=$('simbar');b.hidden=false;
- if(SIM.replay){b.innerHTML=`<span class="lab">Replay · action ${SIM.idx+1} / ${SIM.frames.length}</span><button class="btn" data-sb="first" type="button">⏮</button><button class="btn" data-sb="prev" type="button">◀</button><button class="btn" data-sb="play" type="button">${SIM.timer?'⏸ Pause':'▶ Lecture'}</button><button class="btn" data-sb="next" type="button">▶|</button><button class="btn" data-sb="last" type="button">⏭</button><input type="range" id="rpos" min="0" max="${SIM.frames.length-1}" value="${SIM.idx}" aria-label="Position dans le replay"><button class="btn" data-sb="dl" type="button">Télécharger</button><button class="btn" data-sb="quit" type="button">Quitter le replay</button>`;return;}
+ if(SIM.replay){b.innerHTML=`<span class="lab">Replay · action ${SIM.idx+1} / ${SIM.frames.length}</span><button class="btn" data-sb="first" type="button">⏮</button><button class="btn" data-sb="prev" type="button">◀</button><button class="btn" data-sb="play" type="button">${SIM.timer?'⏸ Pause':'▶ Lecture'}</button><button class="btn" data-sb="next" type="button">▶|</button><button class="btn" data-sb="last" type="button">⏭</button><input type="range" id="rpos" min="0" max="${SIM.frames.length-1}" value="${SIM.idx}" aria-label="Position dans le replay"><button class="btn" data-sb="dl" type="button">Télécharger</button><button class="btn" data-sb="vid" type="button">Vidéo</button><button class="btn" data-sb="quit" type="button">Quitter le replay</button>`;return;}
  b.innerHTML=`<span class="lab">Simulation · ${SIM.frames.length} actions</span><button class="btn" data-sb="pause" type="button">${SIM.paused?'▶ Reprendre':'⏸ Pause'}</button><button class="btn ${SIM.speed>600?'on':''}" data-sb="slow" type="button">Lent</button><button class="btn ${SIM.speed===450?'on':''}" data-sb="norm" type="button">Normal</button><button class="btn ${SIM.speed<200?'on':''}" data-sb="fast" type="button">Rapide</button><button class="btn" data-sb="stop" type="button">Arrêter</button>`;}
 function showFrame(i){SIM.idx=Math.max(0,Math.min(SIM.frames.length-1,i));const f=JSON.parse(SIM.frames[SIM.idx]);f.log=SIM.fullLog.slice(0,f.log);G=f;render();simBar();}
 function startReplay(){if(!SIM.frames.length)return;SIM.fullLog=G.log.slice();SIM.replay=true;SIM.auto=false;SIM.timer=null;showFrame(0);}
@@ -639,6 +640,8 @@ $('simbar').addEventListener('click',(ev)=>{const b=ev.target.closest('[data-sb]
  if(a==='stop'){SIM.auto=false;if(SIM.timer)clearTimeout(SIM.timer);SIM.timer=null;G.over=G.over||'arret';showSummary();}
  if(a==='first')showFrame(0);if(a==='prev')showFrame(SIM.idx-1);if(a==='next')showFrame(SIM.idx+1);if(a==='last')showFrame(SIM.frames.length-1);if(a==='play')replayPlay();
  if(a==='dl')downloadReplay();
+ if(a==='vid')exportVideo();
+ if(a==='vcancel')VID.cancel=true;
  if(a==='quit'){const last=SIM.frames.length-1;showFrame(last);stopSim();G.over=G.over||'arret';render();showSummary();}});
 $('simbar').addEventListener('input',(ev)=>{if(ev.target.id==='rpos'){if(SIM.timer){clearTimeout(SIM.timer);SIM.timer=null;}showFrame(+ev.target.value);}});
 
@@ -656,6 +659,55 @@ function loadReplay(file){
    $('overlay').hidden=true;startReplay();}
   catch(e){$('rperr').textContent='Ce fichier n’est pas un replay PoundaGame valide.';}};
  rd.readAsText(file);}
+
+/* ================= Export vidéo ================= */
+const VID={on:false,cancel:false};
+function frameImage(){return new Promise((res,rej)=>{const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="680" height="680">${boardSVG()}</svg>`;
+ const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});}
+function wrapText(ctx,t,x,y,w,lh,max){const words=String(t).split(' ');let line='';let n=0;for(const wd of words){const test=line?line+' '+wd:wd;if(ctx.measureText(test).width>w&&line){ctx.fillText(line,x,y);y+=lh;line=wd;if(++n>=max)return y;}else line=test;}if(line){ctx.fillText(line,x,y);y+=lh;}return y;}
+function paintFrame(ctx,img,prevLen){
+ const W=1280,H=720;ctx.fillStyle='#0f1c16';ctx.fillRect(0,0,W,H);
+ ctx.drawImage(img,20,20,680,680);
+ const x=730;let y=58;ctx.fillStyle='#eaf3ec';ctx.font='700 30px Fraunces, Georgia, serif';ctx.fillText('Mission 1 · La Lisière',x,y);
+ y+=36;ctx.font='600 22px Fraunces, Georgia, serif';ctx.fillStyle='#ffd97a';ctx.fillText(TILES[G.tile].name,x,y);
+ y+=28;ctx.font='600 17px "Nunito Sans", sans-serif';ctx.fillStyle='#a9c2b3';ctx.fillText(G.mode==='combat'?`Combat · round ${G.round}`:'Exploration',x,y);
+ y+=26;ctx.fillStyle='#24392f';ctx.fillRect(x,y,440,14);ctx.fillStyle='#f2c14b';ctx.fillRect(x,y,440*Math.max(0,Math.min(1,G.charge/30)),14);ctx.fillStyle='#f2c14b';ctx.font='800 17px "Nunito Sans", sans-serif';ctx.fillText(`🏮 ${Math.max(0,G.charge)}`,x+452,y+13);
+ y+=40;heroes().forEach((h)=>{ctx.fillStyle=h.down?'#55665c':h.color;ctx.beginPath();ctx.arc(x+12,y-5,11,0,7);ctx.fill();ctx.fillStyle=h.down?'#7f8f86':'#eaf3ec';ctx.font='700 16px "Nunito Sans", sans-serif';ctx.fillText(`${h.name} · ${CLASSES[h.cls].n}`,x+32,y);
+  ctx.fillStyle='#3a2a28';ctx.fillRect(x+260,y-12,140,9);ctx.fillStyle='#8fd694';ctx.fillRect(x+260,y-12,140*Math.max(0,h.pv)/h.pv0,9);ctx.fillStyle='#a9c2b3';ctx.font='600 14px "Nunito Sans", sans-serif';ctx.fillText(`${h.pv}/${h.pv0} · 💎${h.e}`,x+408,y-3);y+=30;});
+ const cs=alive('c');y+=6;ctx.fillStyle='#e2675b';ctx.font='700 15px "Nunito Sans", sans-serif';ctx.fillText(cs.length?`Créatures : ${cs.length}`:'Aucune créature en vue',x,y);y+=30;
+ ctx.fillStyle='#2c4a3c';ctx.fillRect(x,y-18,520,1);
+ const lines=G.log.slice(Math.max(prevLen,G.log.length-7)).slice(-7);ctx.font='600 15px "Nunito Sans", sans-serif';
+ lines.forEach((l,i)=>{ctx.fillStyle=l.cls==='bad'?'#e2675b':l.cls==='good'?'#8fd694':l.cls==='r'?'#ffd97a':l.cls==='story'?'#cfe3d6':'#eaf3ec';y=wrapText(ctx,l.t,x,y,520,20,2)+4;});
+ if(G.over){ctx.fillStyle='rgba(5,10,8,.7)';ctx.fillRect(20,300,680,120);ctx.fillStyle=G.over==='victoire'?'#ffd97a':'#e2675b';ctx.font='700 46px Fraunces, Georgia, serif';ctx.textAlign='center';ctx.fillText(G.over==='victoire'?'Victoire !':'La mission échoue',360,375);ctx.textAlign='left';}}
+async function exportVideo(){
+ if(VID.on||!SIM.frames.length)return;
+ if(!SIM.replay)startReplay();if(SIM.timer){clearTimeout(SIM.timer);SIM.timer=null;}
+ const cv=document.createElement('canvas');cv.width=1280;cv.height=720;const ctx=cv.getContext('2d');
+ const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];const mime=types.find((t)=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t));
+ if(!mime||!cv.captureStream){log('Ce navigateur ne sait pas enregistrer de vidéo. Essaie avec Chrome ou Firefox.','bad');render();return;}
+ VID.on=true;VID.cancel=false;const ext=mime.includes('mp4')?'mp4':'webm';
+ const stream=cv.captureStream(30);const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});const chunks=[];rec.ondataavailable=(e)=>{if(e.data&&e.data.size)chunks.push(e.data);};
+ const done=new Promise((r)=>{rec.onstop=r;});
+ try{await document.fonts?.ready;}catch(e){}
+ const bar=$('simbar');const N=SIM.frames.length;rec.start(250);
+ let prevLen=0;
+ for(let i=0;i<N&&!VID.cancel;i++){
+  const f=JSON.parse(SIM.frames[i]);const ll=f.log;f.log=SIM.fullLog.slice(0,ll);G=f;
+  bar.hidden=false;bar.innerHTML=`<span class="lab">Export vidéo · action ${i+1} / ${N} · garde cet onglet ouvert et visible</span><button class="btn" data-sb="vcancel" type="button">Annuler</button>`;
+  let img;try{img=await frameImage();}catch(e){continue;}
+  const hold=(i===0||i===N-1)?1800:450;const t0=performance.now();
+  while(performance.now()-t0<hold&&!VID.cancel){paintFrame(ctx,img,prevLen);await new Promise((r)=>setTimeout(r,90));}
+  prevLen=Math.max(0,G.log.length-7);}
+ rec.stop();await done;stream.getTracks().forEach((t)=>t.stop());VID.on=false;
+ SIM.idx=N-1;showFrame(N-1);
+ if(VID.cancel){log('Export vidéo annulé.','');render();return;}
+ const blob=new Blob(chunks,{type:mime.split(';')[0]});
+ const filename=`video-mission1-${heroes().length}heros-${G.over||'partie'}.${ext}`;
+ const fallback=()=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);};
+ const cl=window.claude;
+ if(cl&&cl.use){try{const dl=await cl.use('downloads');if(!dl)fallback();else{await dl.save({filename,data:blob});log('Vidéo enregistrée.','good');}}catch(e){log(e&&e.code==='declined'?'Enregistrement de la vidéo annulé.':'La vidéo n’a pas pu être enregistrée ici ('+(e&&e.code||'erreur')+').','bad');}}
+ else fallback();
+ render();}
 function showSummary(){
  const win=G.over==='victoire';const hs=heroes();const st=G.stats;
  const L=st.tiles[st.tiles.length-1];if(L&&L.out==null)L.out=Math.max(0,G.charge);
@@ -666,8 +718,8 @@ function showSummary(){
  <h3 style="margin-top:12px">Le parcours</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Tuile</th><th>Lanterne</th><th>Combats</th><th>Créatures</th></tr></thead><tbody>${tileRows}</tbody></table></div>
  <h3 style="margin-top:12px">Les héros</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Héros</th><th>Classe</th><th>Fin</th><th>Créatures vaincues</th><th>XP combats</th></tr></thead><tbody>${heroRows}</tbody></table></div>
  ${st.items.length?`<p class="hint">Objets : ${esc(st.items.join(', '))}</p>`:''}
- <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="rp2">Voir le replay action par action</button><button type="button" class="btn" id="dl2">Télécharger le replay<small>fichier .json à garder ou partager</small></button><button type="button" class="btn" id="again2">Nouvelle partie</button></div>`;
- $('overlay').hidden=false;$('rp2').onclick=()=>{$('overlay').hidden=true;startReplay();};$('dl2').onclick=downloadReplay;$('again2').onclick=()=>{stopSim();showSetup();};}
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="rp2">Voir le replay action par action</button><button type="button" class="btn" id="dl2">Télécharger le replay<small>fichier .json à garder ou partager</small></button><button type="button" class="btn" id="vid2">Exporter en vidéo<small>WebM, environ ½ seconde par action</small></button><button type="button" class="btn" id="again2">Nouvelle partie</button></div>`;
+ $('overlay').hidden=false;$('rp2').onclick=()=>{$('overlay').hidden=true;startReplay();};$('dl2').onclick=downloadReplay;$('vid2').onclick=()=>{$('overlay').hidden=true;exportVideo();};$('again2').onclick=()=>{stopSim();showSetup();};}
 
 /* ================= Écrans ================= */
 function showSetup(){
