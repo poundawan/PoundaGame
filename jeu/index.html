@@ -428,8 +428,18 @@ function introParas(hs){
 function showIntro(go){
  const ps=introParas(heroes());
  $('dialog').innerHTML=`<h2>${esc(ps[0])}</h2>`+ps.slice(1).map((p,i)=>`<p class="${i===ps.length-3?'':'hint'}" style="font-size:16px;line-height:1.6;color:${i>=ps.length-3?'var(--ink)':'#cfe3d6'}">${esc(p)}</p>`).join('')+
-  `<div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="introgo">Entrer dans la Lisière</button></div>`;
- $('overlay').hidden=false;$('introgo').onclick=()=>{$('overlay').hidden=true;go();};}
+  `<div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="introgo">Entrer dans la Lisière</button><button type="button" class="btn" id="introsay">🔊 Écouter l’introduction<small id="introtime">voix du navigateur · durée mesurée en direct</small></button></div>`;
+ $('overlay').hidden=false;$('introgo').onclick=()=>{stopSpeak();$('overlay').hidden=true;go();};$('introsay').onclick=()=>speakIntro(ps);}
+let SPK=null;
+function stopSpeak(){if(window.speechSynthesis)speechSynthesis.cancel();if(SPK){clearInterval(SPK);SPK=null;}}
+function speakIntro(ps){const out=$('introtime');if(!window.speechSynthesis){out.textContent='La lecture à voix haute n’est pas disponible dans ce navigateur.';return;}
+ if(SPK||speechSynthesis.speaking){stopSpeak();out.textContent='Lecture arrêtée.';return;}
+ const vs=speechSynthesis.getVoices().filter((v)=>/^fr/i.test(v.lang));const pref=vs.find((v)=>/Google|Natural|Premium|Enhanced|Amélie|Thomas|Audrey/i.test(v.name))||vs[0];
+ const t0=performance.now();const fmt=(ms)=>{const sec=Math.round(ms/1000);return Math.floor(sec/60)+' min '+String(sec%60).padStart(2,'0')+' s';};
+ SPK=setInterval(()=>{out.textContent='Lecture… '+fmt(performance.now()-t0)+' (clique pour arrêter)';},250);
+ ps.forEach((p,i)=>{const u=new SpeechSynthesisUtterance(p);u.lang='fr-FR';if(pref)u.voice=pref;u.rate=0.95;u.pitch=1;
+  if(i===ps.length-1)u.onend=()=>{const d=performance.now()-t0;clearInterval(SPK);SPK=null;out.textContent='Durée de la lecture : '+fmt(d)+(pref?' · voix : '+pref.name:'');};
+  speechSynthesis.speak(u);});}
 function logIntro(){const ps=introParas(heroes());ps.forEach((p)=>log(p,'story'));}
 
 /* ================= Exploration ================= */
