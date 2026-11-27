@@ -629,7 +629,7 @@ function startSim(cfg,fast){stopSim();SIM.frames=[];SIM.auto=true;SIM.paused=fal
 function loop(){if(!SIM.auto)return;if(SIM.paused){SIM.timer=setTimeout(loop,200);return;}
  const go=aiStep();render();simBar();if(go)SIM.timer=setTimeout(loop,SIM.speed);else{SIM.auto=false;$('simbar').hidden=true;render();showSummary();}}
 function simBar(){const b=$('simbar');b.hidden=false;
- if(SIM.replay){b.innerHTML=`<span class="lab">Replay · action ${SIM.idx+1} / ${SIM.frames.length}</span><button class="btn" data-sb="first" type="button">⏮</button><button class="btn" data-sb="prev" type="button">◀</button><button class="btn" data-sb="play" type="button">${SIM.timer?'⏸ Pause':'▶ Lecture'}</button><button class="btn" data-sb="next" type="button">▶|</button><button class="btn" data-sb="last" type="button">⏭</button><input type="range" id="rpos" min="0" max="${SIM.frames.length-1}" value="${SIM.idx}" aria-label="Position dans le replay"><button class="btn" data-sb="quit" type="button">Quitter le replay</button>`;return;}
+ if(SIM.replay){b.innerHTML=`<span class="lab">Replay · action ${SIM.idx+1} / ${SIM.frames.length}</span><button class="btn" data-sb="first" type="button">⏮</button><button class="btn" data-sb="prev" type="button">◀</button><button class="btn" data-sb="play" type="button">${SIM.timer?'⏸ Pause':'▶ Lecture'}</button><button class="btn" data-sb="next" type="button">▶|</button><button class="btn" data-sb="last" type="button">⏭</button><input type="range" id="rpos" min="0" max="${SIM.frames.length-1}" value="${SIM.idx}" aria-label="Position dans le replay"><button class="btn" data-sb="dl" type="button">Télécharger</button><button class="btn" data-sb="quit" type="button">Quitter le replay</button>`;return;}
  b.innerHTML=`<span class="lab">Simulation · ${SIM.frames.length} actions</span><button class="btn" data-sb="pause" type="button">${SIM.paused?'▶ Reprendre':'⏸ Pause'}</button><button class="btn ${SIM.speed>600?'on':''}" data-sb="slow" type="button">Lent</button><button class="btn ${SIM.speed===450?'on':''}" data-sb="norm" type="button">Normal</button><button class="btn ${SIM.speed<200?'on':''}" data-sb="fast" type="button">Rapide</button><button class="btn" data-sb="stop" type="button">Arrêter</button>`;}
 function showFrame(i){SIM.idx=Math.max(0,Math.min(SIM.frames.length-1,i));const f=JSON.parse(SIM.frames[SIM.idx]);f.log=SIM.fullLog.slice(0,f.log);G=f;render();simBar();}
 function startReplay(){if(!SIM.frames.length)return;SIM.fullLog=G.log.slice();SIM.replay=true;SIM.auto=false;SIM.timer=null;showFrame(0);}
@@ -638,8 +638,24 @@ $('simbar').addEventListener('click',(ev)=>{const b=ev.target.closest('[data-sb]
  if(a==='pause'){SIM.paused=!SIM.paused;simBar();}if(a==='slow')SIM.speed=900;if(a==='norm')SIM.speed=450;if(a==='fast')SIM.speed=120;if(['slow','norm','fast'].includes(a))simBar();
  if(a==='stop'){SIM.auto=false;if(SIM.timer)clearTimeout(SIM.timer);SIM.timer=null;G.over=G.over||'arret';showSummary();}
  if(a==='first')showFrame(0);if(a==='prev')showFrame(SIM.idx-1);if(a==='next')showFrame(SIM.idx+1);if(a==='last')showFrame(SIM.frames.length-1);if(a==='play')replayPlay();
+ if(a==='dl')downloadReplay();
  if(a==='quit'){const last=SIM.frames.length-1;showFrame(last);stopSim();G.over=G.over||'arret';render();showSummary();}});
 $('simbar').addEventListener('input',(ev)=>{if(ev.target.id==='rpos'){if(SIM.timer){clearTimeout(SIM.timer);SIM.timer=null;}showFrame(+ev.target.value);}});
+
+function downloadReplay(){
+ const last=JSON.parse(SIM.frames[SIM.frames.length-1]);const fullLog=SIM.replay?SIM.fullLog:G.log;
+ const data={format:'poundagame-replay',version:1,date:new Date().toISOString(),heroes:last.units.filter((u)=>u.side==='h').map((h)=>({name:h.name,race:h.race,cls:h.cls,fam:h.fam})),
+  result:last.over||'',frames:SIM.frames,log:fullLog};
+ const filename=`replay-mission1-${data.heroes.length}heros-${(data.result||'partie')}-${data.date.slice(0,16).replace(/[:T]/g,'-')}.json`;const text=JSON.stringify(data);
+ const fallback=()=>{const blob=new Blob([text],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);};
+ const cl=window.claude;if(cl&&cl.use){cl.use('downloads').then((dl)=>{if(!dl)return fallback();return dl.save({filename,data:text}).catch(()=>{log('Téléchargement annulé ou refusé.','bad');render();});}).catch(fallback);}else fallback();}
+function loadReplay(file){
+ const rd=new FileReader();rd.onload=()=>{try{const data=JSON.parse(rd.result);
+   if(data.format!=='poundagame-replay'||!Array.isArray(data.frames)||!data.frames.length||!Array.isArray(data.log))throw new Error('format');
+   stopSim();SIM.frames=data.frames.map((f)=>typeof f==='string'?f:JSON.stringify(f));G=JSON.parse(SIM.frames[SIM.frames.length-1]);G.log=data.log;
+   $('overlay').hidden=true;startReplay();}
+  catch(e){$('rperr').textContent='Ce fichier n’est pas un replay PoundaGame valide.';}};
+ rd.readAsText(file);}
 function showSummary(){
  const win=G.over==='victoire';const hs=heroes();const st=G.stats;
  const L=st.tiles[st.tiles.length-1];if(L&&L.out==null)L.out=Math.max(0,G.charge);
@@ -650,8 +666,8 @@ function showSummary(){
  <h3 style="margin-top:12px">Le parcours</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Tuile</th><th>Lanterne</th><th>Combats</th><th>Créatures</th></tr></thead><tbody>${tileRows}</tbody></table></div>
  <h3 style="margin-top:12px">Les héros</h3><div style="overflow-x:auto"><table class="sumt"><thead><tr><th>Héros</th><th>Classe</th><th>Fin</th><th>Créatures vaincues</th><th>XP combats</th></tr></thead><tbody>${heroRows}</tbody></table></div>
  ${st.items.length?`<p class="hint">Objets : ${esc(st.items.join(', '))}</p>`:''}
- <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="rp2">Voir le replay action par action</button><button type="button" class="btn" id="again2">Nouvelle partie</button></div>`;
- $('overlay').hidden=false;$('rp2').onclick=()=>{$('overlay').hidden=true;startReplay();};$('again2').onclick=()=>{stopSim();showSetup();};}
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="rp2">Voir le replay action par action</button><button type="button" class="btn" id="dl2">Télécharger le replay<small>fichier .json à garder ou partager</small></button><button type="button" class="btn" id="again2">Nouvelle partie</button></div>`;
+ $('overlay').hidden=false;$('rp2').onclick=()=>{$('overlay').hidden=true;startReplay();};$('dl2').onclick=downloadReplay;$('again2').onclick=()=>{stopSim();showSetup();};}
 
 /* ================= Écrans ================= */
 function showSetup(){
@@ -662,13 +678,14 @@ function showSetup(){
  $('dialog').innerHTML=`<h2>Préparer l’expédition</h2><p class="hint">Mission 1 de PoundaGame, version de test v0.2 : les règles figées de la bible, les dés lancés automatiquement. Tous les joueurs partagent cet écran.</p>
  <label style="display:flex;gap:10px;align-items:center;margin-top:10px">Nombre de héros <select id="nb" style="width:auto">${[2,3,4,5].map((n)=>`<option ${n===3?'selected':''}>${n}</option>`).join('')}</select></label>
  <div class="setup">${rows}</div><p class="hint">À 2 héros : +1 aux dégâts et +3 PV chacun. Chaque héros part avec 1 potion de soin et 1 potion de second souffle.</p>
- <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="go">Entrer dans le Voile</button><button type="button" class="btn" id="simfull">Simuler la partie<small>l’IA joue, tu regardes tout</small></button><button type="button" class="btn" id="simfast">Simulation rapide<small>résultat et résumé, puis replay</small></button></div>`;
+ <div class="acts" style="margin-top:12px"><button type="button" class="btn main" id="go">Entrer dans le Voile</button><button type="button" class="btn" id="simfull">Simuler la partie<small>l’IA joue, tu regardes tout</small></button><button type="button" class="btn" id="simfast">Simulation rapide<small>résultat et résumé, puis replay</small></button><label class="btn" for="rpfile" style="cursor:pointer">Ouvrir un replay<small>fichier .json téléchargé</small></label><input type="file" id="rpfile" accept=".json,application/json" hidden></div><p class="hint" id="rperr"></p>`;
  $('overlay').hidden=false;
  const upd=()=>{const n=+$('nb').value;for(let i=0;i<5;i++)$('row'+i).hidden=i>=n;};$('nb').onchange=upd;upd();
  const cfgOf=()=>{const n=+$('nb').value;const cfg=[];for(let i=0;i<n;i++)cfg.push({name:$('nm'+i).value.trim()||('Héros '+(i+1)),race:$('ra'+i).value,cls:$('cl'+i).value,fam:$('fa'+i).value});return cfg;};
  $('go').onclick=()=>{stopSim();$('overlay').hidden=true;newGame(cfgOf());};
  $('simfull').onclick=()=>{$('overlay').hidden=true;startSim(cfgOf(),false);};
- $('simfast').onclick=()=>{$('overlay').hidden=true;startSim(cfgOf(),true);};}
+ $('simfast').onclick=()=>{$('overlay').hidden=true;startSim(cfgOf(),true);};
+ $('rpfile').onchange=(ev)=>{const f=ev.target.files[0];if(f)loadReplay(f);};}
 function showEnd(){
  const win=G.over==='victoire';const hs=heroes();
  const rows=hs.map((h)=>{const xp=G.xp[h.id]+(win&&!h.down?10:0)+(win?Math.max(0,G.charge):0);return `<tr><td>${esc(h.name)}</td><td>${h.down?'à terre':'debout'}</td><td>${G.xp[h.id]}</td><td>${win&&!h.down?10:0}</td><td>${win?Math.max(0,G.charge):0}</td><td><b>${xp}</b></td></tr>`;}).join('');
