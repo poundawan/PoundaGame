@@ -151,8 +151,8 @@ const SP={
  lame:{n:'Lame',c:1,r:1,t:'foe',d:8,txt:'corps à corps, d8'},
  marteau:{n:'Marteau',c:1,r:1,t:'foe',d:6,txt:'d6, repousse de 2 cases, la cible ne bougera pas'},
  lance:{n:'Lance',c:1,r:2,t:'line',d:6,txt:'d6 aux créatures alignées sur 2 cases'},
- arc:{n:'Arc de lumière',c:1,r:6,t:'foe',d:8,txt:'distance 6, d8'},
- cible:{n:'Cible illuminée',c:1,r:6,t:'foeauto',txt:'+2 pour toucher la cible pour tous, jusqu’à sa chute'},
+ arc:{n:'Arc de lumière',c:1,r:6,t:'foe',d:6,txt:'distance 6, d6'},
+ cible:{n:'Cible illuminée',c:1,r:6,t:'foeauto',txt:'+1 pour toucher la cible pour tous, jusqu’à sa chute'},
  piege:{n:'Piège runique',c:1,r:3,t:'cell',txt:'la 1re créature qui entre subit d8 et ne bouge plus 1 round'},
  etincelle:{n:'Étincelle',c:1,r:6,t:'foe',d:6,txt:'distance 6, d6'},
  flocon:{n:'Flocon',c:1,r:5,t:'foe',d:4,txt:'d4 et −1 déplacement au prochain tour'},
@@ -161,9 +161,9 @@ const SP={
  lameombre:{n:'Lame d’ombre',c:1,r:2,t:'foe',d:6,txt:'portée 2, d6'},
  pasombre:{n:'Pas d’ombre',c:1,r:4,t:'tele',txt:'téléportation à 4 cases, à travers tout'},
  echange:{n:'Échange d’ombres',c:1,r:4,t:'swap',txt:'échange ta place avec un allié ou une créature'}};
-const CRE={chenille:{n:'Chenille de lueur',att:8,def:0,pv:2,dmg:4,mv:3,xp:1,c:'#e8e2ff'},phalene:{n:'Phalène mange-lumière',att:11,def:1,pv:4,dmg:4,mv:5,xp:4,fly:1,c:'#8ea0c8'},
- cracheur:{n:'Cracheur de spores',att:10,def:2,pv:4,dmg:4,mv:0,xp:3,rng:3,c:'#5f9a8c'},vesse:{n:'Vesse-de-loup',att:0,def:0,pv:3,dmg:6,mv:0,xp:2,c:'#e09a5a'},
- blaireau:{n:'Blaireau des souches',att:12,def:3,pv:10,dmg:8,mv:4,xp:6,c:'#6b5a46'},lumivore:{n:'Lumivore',att:11,def:3,pv:18,dmg:6,mv:0,xp:15,boss:1,c:'#2c5a46'},
+const CRE={chenille:{n:'Chenille de lueur',att:9,def:0,pv:3,dmg:4,mv:3,xp:1,c:'#e8e2ff'},phalene:{n:'Phalène mange-lumière',att:12,def:1,pv:5,dmg:4,mv:5,xp:4,fly:1,c:'#8ea0c8'},
+ cracheur:{n:'Cracheur de spores',att:11,def:2,pv:5,dmg:4,mv:0,xp:3,rng:3,c:'#5f9a8c'},vesse:{n:'Vesse-de-loup',att:0,def:0,pv:4,dmg:6,mv:0,xp:2,c:'#e09a5a'},
+ blaireau:{n:'Blaireau des souches',att:13,def:3,pv:13,dmg:8,mv:4,xp:6,c:'#6b5a46'},lumivore:{n:'Lumivore',att:12,def:3,pv:23,dmg:6,mv:0,xp:15,boss:1,c:'#2c5a46'},
  leurre:{n:'Leurre',att:0,def:5,pv:6,dmg:0,mv:0,xp:3,fixed:1,c:'#ffd35c'}};
 const DECK0=['seve','seve','seve','seve','seve','cristal','cristal','cristal','cristal','eclat','eclat','eclat','eclat','bulle','bulle','talisman','bottes','pierre','bourse','curio','curio','curio','curio'];
 const ITEMS={soin:'Potion de soin (+6 PV)',souffle:'Potion de second souffle (tous les Éclats)',seve:'Sève de lune (d6 PV)',cristal:'Cristal de lumière (+2 charges)',eclat:'Éclat brut (+2 Éclats)',bulle:'Bulle d’air (Souffle)',curio:'Curiosité du Voile',
@@ -280,7 +280,7 @@ function startHeroTurn(h){
  log(`Tour de ${h.name} (${CLASSES[h.cls].n}) · ${h.e} Éclats.`,'');}
 function attackScore(h,t){let s=h.mai-h.malus-t.def;
  if(Object.entries(G.force).some(([c,id])=>id===h.id&&byId(c)&&!byId(c).down))s+=2;
- if(Object.values(G.illum).includes(t.id))s+=(TUNE.illum??2);
+ if(Object.values(G.illum).includes(t.id))s+=(TUNE.illum??1);
  if(h.hitb){s+=h.hitb;}
  if(h.cls==='rempart'&&TUNE.ramp&&G.mode==='combat')s+=Math.min(TUNE.ramp,G.round-1);
  return s;}
@@ -325,7 +325,7 @@ function castSpell(h,sid,tgt){
  else if(sid==='lienforce'){G.force[h.id]=tgt.id;log(`${h.name} tisse un Lien de force vers ${tgt.name} (+2 aux attaques).`,'good');}
  else if(sid==='lienleger'){tgt.light=2;log(`${tgt.name} se sent léger (+1 case par déplacement).`,'good');}
  else if(sid==='lienvie'){if(tgt.side==='h'){const v=d(6);tgt.pv=Math.min(tgt.pv0,tgt.pv+v);log(`Lien de vie : ${tgt.name} regagne ${v} PV.`,'good');}else heroAttack(h,tgt,6,'Lien de vie');}
- else if(sid==='cible'){G.illum[h.id]=tgt.id;log(`${tgt.name} se met à briller : +2 pour la toucher.`,'good');}
+ else if(sid==='cible'){G.illum[h.id]=tgt.id;log(`${tgt.name} se met à briller : +1 pour la toucher.`,'good');}
  else if(sid==='piege'){G.traps.push({x:tgt[0],y:tgt[1]});log(`${h.name} trace un Piège runique.`,'good');}
  else if(sid==='marteau'){if(heroAttack(h,tgt,6,'Marteau')&&tgt.pv>0&&!tgt.big&&tgt.kind!=='leurre'){const dx=Math.sign(tgt.x-h.x),dy=Math.sign(tgt.y-h.y);
    for(let i=0;i<2;i++){const nx=tgt.x+dx,ny=tgt.y+dy;const ch=cell(nx,ny);if(solid(ch)||'OZ#'.includes(ch)||unitAt(nx,ny))break;tgt.x=nx;tgt.y=ny;}tgt.stuck=1;log(`${tgt.name} est repoussé et sonné.`,'');}}
